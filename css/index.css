@@ -1,0 +1,168 @@
+* {
+  box-sizing: border-box;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+  /* CSS HEX */
+  --khaki: #b3a49aff;
+  --walnut-brown: #625a55ff;
+  --night: #10100fff;
+  --gray: #777b7eff;
+  --alice-blue: #dde5edff;
+  --thistle: #d3c9d9ff;
+  --pink-lavender: #c9adc4ff;
+  --rose-quartz: #b6a8b8ff;
+  --cambridge-blue: #7c9793ff;
+  --cadet-gray: #88a09dff;
+
+  /* CSS HSL */
+  --khaki: hsla(24, 14%, 65%, 1);
+  --walnut-brown: hsla(23, 7%, 36%, 1);
+  --night: hsla(60, 3%, 6%, 1);
+  --gray: hsla(206, 3%, 48%, 1);
+  --alice-blue: hsla(210, 31%, 90%, 1);
+  --thistle: hsla(278, 17%, 82%, 1);
+  --pink-lavender: hsla(311, 21%, 73%, 1);
+  --rose-quartz: hsla(293, 10%, 69%, 1);
+  --cambridge-blue: hsla(171, 11%, 54%, 1);
+  --cadet-gray: hsla(173, 11%, 58%, 1);
+}
+
+body {
+  background-color: #dde5edff;
+  color: var(--night);
+  margin: 0;
+}
+
+header {
+  text-align: center;
+  background-image: url(../images/susan-weber-MrtjMjQZQRw-unsplash.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+}
+
+header h1 {
+  font-size: 5rem;
+  font-weight: normal;
+  color: var(--alice-blue);
+  width: auto;
+  background-color: hsla(23, 7%, 36%, 0.5);
+  /*text-shadow: var(--night) 0px 0px 50px;*/
+  font-family: 'Shadows Into Light', cursive;
+}
+
+nav {
+  background-color: var(--khaki);
+  margin: 0;
+  padding: 10px 0;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0px;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+  color: var(--alice-blue);
+}
+
+nav ul {
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  width: 80px;
+}
+
+main {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 3fr;
+  grid-auto-rows: 2fr;
+}
+
+section {
+  margin: 10px;
+  padding: 10px;
+  max-width: 800px;
+  text-align: center;
+}
+
+.description {
+  grid-column: 1 / span 2;
+}
+
+.editor {
+
+}
+
+.game-box {
+  display: grid;
+  grid-template-areas: 1fr 1fr / 1fr 1fr;
+}
+
+.stat p{
+  font-size: 1.5rem;
+}
+
+#word-stat {
+  
+}
+
+#editor-field {
+  display: block;
+  background-color: white;
+  border: 1px solid black;
+
+  font: 1em sans-serif;
+  text-align: left;
+
+  /* Uniform text field size */
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  resize: none;
+  overflow-y: scroll;
+}
+
+form {
+  /* Center the form on the page */
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  /* Form outline */
+  padding: 1em;
+  border: 1px solid #ccc;
+  border-radius: 1em;
+}
+
+.reference {
+  text-align: right;
+  background-color: white;
+  opacity: 0.6;
+}
+
+.reference h6 {
+  opacity: 1;
+}
+
+@media only screen and (max-width: 600px) {
+  header h1 {
+    font-size: 3.5rem;
+  }
+
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  .description {
+    grid-column: 1 / 2;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  header h1 {
+    font-size: 2.5rem;
+  }
+}

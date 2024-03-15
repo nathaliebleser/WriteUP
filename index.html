@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Write UP</title>
+    <link href="./css/reset.css" type="text/css" rel="stylesheet">
+    <link href="./css/index.css" type="text/css" rel="stylesheet">
+    <script src="./js/index.js" async></script>
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="manifest" href="./images/site.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <h1>Write to Level UP</h1>
+      <div class="reference"><h6>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></h6></div>
+    </header>
+    <nav>
+      <ul>
+        <li>Settings</li>
+        <li>About</li>
+      </ul>
+    </nav>
+    <main>
+      <section class="description">
+        <p>One writer wants to both write and program, and find a job. How is she to do that?
+          Presenting Write UP, the place where you have to write to level up.</p>
+      </section>
+      <section class="editor">
+        <form>
+          <!-- <ul>
+            <li><label for="main-editor">Write here</label></li>
+            <li><textarea" id="main-editor" name="editor">Hep</textarea>
+            </li>
+          </ul> -->
+          <textarea id="editor-field" name="editor" placeholder="Write something here" oninput="calculate()"></textarea>
+        </form>
+      </section>
+      <section class="game-box">
+        <div class="stat" id="point-stat">
+          <h2>Points:</h2>
+          <p id="points">0</p>
+        </div>
+        <div class="stat" id="word-stat">
+          <h2>Word Count:</h2>
+          <p id="word-count">0</p>
+        </div>
+        <div class="stat" id="level-stat">
+          <h2>Level:</h2>
+          <p id="level">0</p>
+        </div>
+        <div class="stat" id="alltime-word-stat">
+          <h2>All-time Words:</h2>
+          <p id="alltime-word-count">0</p>
+        </div>
+      </section>
+    </main>
+    
+  </body>
+</html>
