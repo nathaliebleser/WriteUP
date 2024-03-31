@@ -31,6 +31,9 @@ body {
   background-color: #dde5edff;
   color: var(--night);
   margin: 0;
+  /*display: grid;
+  grid-column: 1fr;
+  justify-content: center;*/
 }
 
 header {
@@ -77,36 +80,77 @@ main {
   display: grid;
   justify-content: center;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 3fr;
-  grid-auto-rows: 2fr;
+  grid-template-rows: minmax(100px,400px);
+  grid-auto-rows: 1fr;
 }
 
 section {
-  margin: 10px;
+  /*margin: 10px;*/
   padding: 10px;
-  max-width: 800px;
+  max-width: 100%;
   text-align: center;
 }
 
-.description {
+#about {
   grid-column: 1 / span 2;
+  padding: 2% 10%;
+  width: 100%;
+  justify-self: center;
+  position: relative;
+  background-color: var(--thistle);
 }
 
-.editor {
-
+#about p {
+  max-width: 800px;
 }
+
+#stats {
+  grid-column: 1 / span 2;
+  padding: 2% 10%;
+  width: 100%;
+  justify-self: center;
+  position: relative;
+  background-color: var(--thistle);
+}
+
+
+/* #about::after {
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0 0.6rem;
+  font-size: large;
+  content: "X";
+  position: absolute;
+  border: 1px solid black;
+  top: 5%;
+  right: 5%;
+} */
 
 .game-box {
   display: grid;
   grid-template-areas: 1fr 1fr / 1fr 1fr;
+  align-items: center;
+  font-size: 1.5rem;
+  gap: 10px;
 }
 
-.stat p{
+.game-box h2 {
   font-size: 1.5rem;
 }
 
+#point-stat {
+  grid-area: 1 / 1 / span 1 / span 1; 
+}
+
 #word-stat {
-  
+  grid-area: 2 / 1 / span 1 / span 1;
+}
+
+#level-stat {
+  grid-area: 1 / 2 / span 1 / span 1;
+}
+
+#alltime-word-stat {
+  grid-area: 2 / 2 / span 1 / span 1;
 }
 
 #editor-field {
@@ -154,9 +198,14 @@ form {
 
   main {
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
   }
 
-  .description {
+  #about {
+    grid-column: 1 / 2;
+  }
+
+  #stats {
     grid-column: 1 / 2;
   }
 }
@@ -164,5 +213,9 @@ form {
 @media only screen and (max-width: 480px) {
   header h1 {
     font-size: 2.5rem;
+  }
+
+  .game-box h2, .game-box p{
+    font-size: 1.25rem;
   }
 }

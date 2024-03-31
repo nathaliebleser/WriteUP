@@ -20,22 +20,73 @@
     </header>
     <nav>
       <ul>
-        <li>Settings</li>
-        <li>About</li>
+        <li><span onclick="toggleShowAbout()">About<span></li>
+        <li><span onclick="toggleShowStats()">Stats<span></li>
+        <li><span onclick="toggleShowSettings()">Settings</span></li>
       </ul>
     </nav>
+    <section id="settings" style="display: none;">
+      <form class="game-features">
+        <h3>Game features:</h3>
+        <label for="long-words">Reward long words?</label>
+        <input type="checkbox" id="long-words" value="reward long words" checked><br>
+        <label for="long-word-length">Long word minimum length</label>
+        <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"><br>
+       
+        <label for="punctuation">Reward punctuation?</label>
+        <input type="checkbox" id="punctuation" value="reward punctuation" checked><br>
+        
+        <label for="cutoff">Delete text in textbox?</label>
+        <input type="checkbox" id="cutoff"><br>
+        <label for="cutoff-at">Delete text if exceeds x characters:</label>
+        <input type="number" id="cutoff-at" min="30" value="50"><br>
+        
+        <!--Buttons-->
+        <input type="button" value="Apply and save settings" onclick="acceptGameSettings()">
+        <input type="button" value="Reset" onclick="resetGameSettings()"><br>
+      </form>
+
+      <form class="display-preferences">
+        <h3>Display Preferences</h3>
+        <label for="dark-mode">Dark mode</label>
+        <input type="checkbox" id="dark-mode"><br>
+        <label for="hide-points">Hide Points</label>
+        <input type="checkbox" id="hide-points"><br>
+        <label for="hide-level">Hide Level</label>
+        <input type="checkbox" id="hide-level"><br>
+        <label for="hide-session-words">Hide Session Words</label>
+        <input type="checkbox" id="hide-session-words"><br>
+        <label for="hide-alltime-words">Hide Alltime Words</label>
+        <input type="checkbox" id="hide-alltime-words"><br>
+        <input type="button" value="Apply Settings" onclick="acceptDisplaySettings()">
+        <input type="button" value="Reset" onclick="resetDisplaySettings()"><br>
+      </form>
+
+      <form class="ultimate-goal">
+        <label for="word-goal">Ultimate Word Goal</label><br>
+        <input type="number" id="word-goal" min="10000" step="1000" value="" placeholder="Multiple of 1000"><br>
+        <input type="button" value="Set ultimate word goal" onclick="acceptUltimateGoal()">
+      </form>
+
+      <form class="session-goal">
+        <label for="session-goal">Session Word Goal</label><br>
+        <input type="number" id="session-goal" value="500"><br>
+        <input type="button" value="Set session word goal">
+      </form>
+    </section>
+
     <main>
-      <section class="description">
-        <p>One writer wants to both write and program, and find a job. How is she to do that?
-          Presenting Write UP, the place where you have to write to level up.</p>
+      <section id="about" style="display: none;" onclick="toggleShowAbout()">
+        <p>This application was programmed by a person with a dual passion for coding and writing.<br> It is meant for rapid outputting of words, in brainstorm or free-flow sessions.<br> Points and levels exist solely for motivational purposes. Check the settings if you wish to disable one of all of them.</p>
+      </section>
+      <section id="stats" style="display: none;" onclick="toggleShowStats()">
+        <label for="total-words">Ultimate goal progress:</label><br>
+        <p><span id="words-until-now">0</span>/<span id="ultimate-goal-words">0</span></p>
+        <meter id="total-words" min="0" max="100" value="0%">0%</meter>
+        <p>Words until next level: <span id="until-next-level">571</span></p>
       </section>
       <section class="editor">
         <form>
-          <!-- <ul>
-            <li><label for="main-editor">Write here</label></li>
-            <li><textarea" id="main-editor" name="editor">Hep</textarea>
-            </li>
-          </ul> -->
           <textarea id="editor-field" name="editor" placeholder="Write something here" oninput="calculate()"></textarea>
         </form>
       </section>
@@ -56,6 +107,9 @@
           <h2>All-time Words:</h2>
           <p id="alltime-word-count">0</p>
         </div>
+      </section>
+      <section class="saved-text">
+        <p id="save"></p>
       </section>
     </main>
     
