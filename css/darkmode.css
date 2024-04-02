@@ -1,0 +1,67 @@
+* {
+  --khaki: hsla(24, 14%, 65%, 1);
+  --walnut-brown: hsla(23, 7%, 36%, 1);
+  --night: hsla(60, 3%, 6%, 1);
+  --gray: hsla(206, 3%, 48%, 1);
+  --alice-blue: hsla(210, 31%, 90%, 1);
+  --thistle: hsla(278, 17%, 82%, 1);
+  --pink-lavender: hsla(311, 21%, 73%, 1);
+  --rose-quartz: hsla(293, 10%, 69%, 1);
+  --cambridge-blue: hsla(171, 11%, 54%, 1);
+  --cadet-gray: hsla(173, 11%, 58%, 1);
+}
+
+body {
+  background-color: var(--night);
+  color: var(--alice-blue);
+}
+
+nav {
+  background-color: rgb(49, 49, 49);
+}
+
+header h1 {
+  color: var(--alice-blue);
+  background-color: hsla(60, 3%, 6%, 0.5);
+}
+
+.reference {
+  background-color: var(--night);
+  opacity: 0.6;
+}
+
+.reference h6 {
+  opacity: 1;
+}
+
+.reference a {
+  color: var(--alice-blue);
+}
+
+#leaderboard th,td {
+  background-color: var(--night);
+}
+
+#save {
+  background-color: rgb(49, 49, 49);
+  color: var(--alice-blue);
+}
+
+textarea {
+  background-color: rgb(49, 49, 49);
+  color: var(--alice-blue);
+  border: auto auto var(--alice-blue);
+  scrollbar-color: var(--night) rgb(49, 49, 49);
+}
+
+#about {
+  background-color: rgb(49, 49, 49);
+}
+
+#stats {
+  background-color: rgb(49, 49, 49);
+}
+
+#settings {
+  background-color: rgb(49, 49, 49);
+}

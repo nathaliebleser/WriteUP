@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <head>
+  <head id="head">
     <title>Write UP</title>
     <link href="./css/reset.css" type="text/css" rel="stylesheet">
     <link href="./css/index.css" type="text/css" rel="stylesheet">
-    <script src="./js/index.js" async></script>
+    <!--<link href="./css/darkmode.css" type="text/css" rel="stylesheet">-->
+    <script src="./js/index.js" defer></script>
     <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
@@ -25,69 +26,86 @@
         <li><span onclick="toggleShowSettings()">Settings</span></li>
       </ul>
     </nav>
-    <section id="settings" style="display: none;">
+    <section id="settings">
       <form class="game-features">
-        <h3>Game features:</h3>
-        <label for="long-words">Reward long words?</label>
-        <input type="checkbox" id="long-words" value="reward long words" checked><br>
-        <label for="long-word-length">Long word minimum length</label>
-        <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"><br>
-       
-        <label for="punctuation">Reward punctuation?</label>
-        <input type="checkbox" id="punctuation" value="reward punctuation" checked><br>
-        
-        <label for="cutoff">Delete text in textbox?</label>
-        <input type="checkbox" id="cutoff"><br>
-        <label for="cutoff-at">Delete text if exceeds x characters:</label>
-        <input type="number" id="cutoff-at" min="30" value="50"><br>
-        
+        <h3>Game features</h3>
+        <div class="checkmark-settings">
+          <input type="checkbox" id="cutoff" value="delete text" onclick="toggleCutoff()"/>
+          <label for="cutoff">Delete text in textbox</label><br>
+
+          <input type="checkbox" id="long-words" value="reward long words" onclick="toggleLongWordLength()" checked/>
+          <label for="long-words">Reward long words</label><br>
+
+          <input type="checkbox" id="punctuation" value="reward punctuation" checked/>
+          <label for="punctuation">Reward punctuation</label><br>
+        </div>
+
+        <div class="number-settings">
+          <label for="cutoff-at">Delete text if exceeds x characters</label>
+          <input type="number" id="cutoff-at" min="30" value="50" disabled/>
+
+          <label for="long-word-length">Long word minimum length</label>
+          <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"/>
+        </div>
         <!--Buttons-->
-        <input type="button" value="Apply and save settings" onclick="acceptGameSettings()">
-        <input type="button" value="Reset" onclick="resetGameSettings()"><br>
+        <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
+        <input type="button" value="Reset" onclick="resetGameSettings()"/><br>
       </form>
 
       <form class="display-preferences">
         <h3>Display Preferences</h3>
-        <label for="dark-mode">Dark mode</label>
-        <input type="checkbox" id="dark-mode"><br>
-        <label for="hide-points">Hide Points</label>
-        <input type="checkbox" id="hide-points"><br>
-        <label for="hide-level">Hide Level</label>
-        <input type="checkbox" id="hide-level"><br>
-        <label for="hide-session-words">Hide Session Words</label>
-        <input type="checkbox" id="hide-session-words"><br>
-        <label for="hide-alltime-words">Hide Alltime Words</label>
-        <input type="checkbox" id="hide-alltime-words"><br>
-        <input type="button" value="Apply Settings" onclick="acceptDisplaySettings()">
-        <input type="button" value="Reset" onclick="resetDisplaySettings()"><br>
+        <div class="checkmark-settings">
+          <input type="checkbox" id="dark-mode">
+          <label for="dark-mode">Dark mode</label><br>
+
+          <input type="checkbox" id="hide-points"/>
+          <label for="hide-points">Hide Points</label><br>
+
+          <input type="checkbox" id="hide-level"/>
+          <label for="hide-level">Hide Level</label><br>
+
+          <input type="checkbox" id="hide-session-words"/>
+          <label for="hide-session-words">Hide Session Words</label><br>
+
+          <input type="checkbox" id="hide-alltime-words"/>
+          <label for="hide-alltime-words">Hide Alltime Words</label><br>
+        </div>
+        <input type="button" value="Apply Settings" onclick="acceptDisplaySettings()"/>
+        <input type="button" value="Reset" onclick="resetDisplaySettings()"/><br>
       </form>
 
+    </section>
+    <section id="about" onclick="toggleShowAbout()">
+      <p>This application was programmed by a person with a dual passion for coding and writing.<br> It is meant for rapid outputting of words, in brainstorm or free-flow sessions.<br> Points and levels exist solely for motivational purposes. Check the settings if you wish to disable one or all of them.</p>
+    </section>
+    <section id="stats">
       <form class="ultimate-goal">
         <label for="word-goal">Ultimate Word Goal</label><br>
-        <input type="number" id="word-goal" min="10000" step="1000" value="" placeholder="Multiple of 1000"><br>
-        <input type="button" value="Set ultimate word goal" onclick="acceptUltimateGoal()">
+        <input type="number" id="word-goal" min="10000" step="1000" value="" placeholder="Multiple of 1000"/><br>
+        <input type="button" value="Set ultimate word goal" onclick="acceptUltimateGoal()"/>
       </form>
-
+      <label for="total-words">Ultimate goal progress:</label><br>
+      <p><span id="words-until-now">0</span>/<span id="ultimate-goal-words">0</span></p>
+      <meter id="total-words" min="0" max="100" value="0%">0%</meter>
+      <p>Words until next level: <span id="until-next-level">571</span></p>
+    </section>
+    <section id="goals">
       <form class="session-goal">
-        <label for="session-goal">Session Word Goal</label><br>
-        <input type="number" id="session-goal" value="500"><br>
-        <input type="button" value="Set session word goal">
+        <label for="session-goal">Session Goal</label>
+        <input type="number" id="session-goal" min="1" value="500"/>
+        <input type="radio" id="words" name="measure" value="words" onclick="changeToWords()" checked/>
+        <label for="words">Words</label>
+        <input type="radio" id="minutes" name="measure" value="minutes" onclick="changeToMinutes()"/>
+        <label for="minutes">Minutes</label>
+        <input type="button" id="session-goal-btn" value="Set session goal" onclick="startSession()"/>
+        <input type="button" id="free-session-goal-btn" value="Write without goal" onclick="startFreeSession()"/>
+        <h2 id="goal-indicator">Left:</h4>
       </form>
     </section>
-
     <main>
-      <section id="about" style="display: none;" onclick="toggleShowAbout()">
-        <p>This application was programmed by a person with a dual passion for coding and writing.<br> It is meant for rapid outputting of words, in brainstorm or free-flow sessions.<br> Points and levels exist solely for motivational purposes. Check the settings if you wish to disable one of all of them.</p>
-      </section>
-      <section id="stats" style="display: none;" onclick="toggleShowStats()">
-        <label for="total-words">Ultimate goal progress:</label><br>
-        <p><span id="words-until-now">0</span>/<span id="ultimate-goal-words">0</span></p>
-        <meter id="total-words" min="0" max="100" value="0%">0%</meter>
-        <p>Words until next level: <span id="until-next-level">571</span></p>
-      </section>
       <section class="editor">
         <form>
-          <textarea id="editor-field" name="editor" placeholder="Write something here" oninput="calculate()"></textarea>
+          <textarea id="editor-field" name="editor" placeholder="Write something here (but make sure to save any text from a previous session before)" oninput="calculate()"></textarea>
         </form>
       </section>
       <section class="game-box">
@@ -109,7 +127,20 @@
         </div>
       </section>
       <section class="saved-text">
-        <p id="save"></p>
+        <form>
+          <textarea id="save" name="savedText" placeholder="Here is where your text will show up so you can copy and save it later" readonly></textarea>
+        </form>
+      </section>
+      <section>
+        <table id="leaderboard">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Points</th>
+              <th>Settings</th>
+            </tr>
+          </thead>
+        </table>
       </section>
     </main>
     

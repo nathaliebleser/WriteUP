@@ -3,7 +3,7 @@
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 
   /* CSS HEX */
-  --khaki: #b3a49aff;
+  /*--khaki: #b3a49aff;
   --walnut-brown: #625a55ff;
   --night: #10100fff;
   --gray: #777b7eff;
@@ -12,7 +12,7 @@
   --pink-lavender: #c9adc4ff;
   --rose-quartz: #b6a8b8ff;
   --cambridge-blue: #7c9793ff;
-  --cadet-gray: #88a09dff;
+  --cadet-gray: #88a09dff; */
 
   /* CSS HSL */
   --khaki: hsla(24, 14%, 65%, 1);
@@ -80,7 +80,7 @@ main {
   display: grid;
   justify-content: center;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: minmax(100px,400px);
+  grid-template-rows: minmax(100px,350px);
   grid-auto-rows: 1fr;
 }
 
@@ -92,25 +92,74 @@ section {
 }
 
 #about {
-  grid-column: 1 / span 2;
   padding: 2% 10%;
   width: 100%;
-  justify-self: center;
-  position: relative;
+  display: none;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 44px;
   background-color: var(--thistle);
 }
 
 #about p {
+  margin: auto auto;
   max-width: 800px;
 }
 
 #stats {
-  grid-column: 1 / span 2;
   padding: 2% 10%;
   width: 100%;
-  justify-self: center;
-  position: relative;
+  display: none;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 44px;
   background-color: var(--thistle);
+}
+
+#settings {
+  padding: 2% 10%;
+  width: 100%;
+  display: none;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 44px;
+  background-color: var(--thistle);
+}
+
+#goals h2 {
+  text-align: center;
+  margin: 1rem 0.5rem 0rem 0.5rem;
+}
+
+input[type=number] {
+  width: 70px;
+  text-align: right;
+}
+
+.checkmark-settings {
+  margin: 5px auto;
+  text-align: left;
+  width: fit-content;
+}
+
+.number-settings {
+  width: fit-content;
+  margin: 5px auto;
+  display: grid;
+  grid-template-columns: [label] auto [input] 60px;
+  gap: 5px 10px;
+}
+
+.number-settings label {
+  grid-column: label;
+  align-self: center;
+  justify-self: start;
+}
+
+.number-settings input {
+  grid-column: input;
+  align-self: center;
+  width: 60px;
 }
 
 
@@ -153,10 +202,10 @@ section {
   grid-area: 2 / 2 / span 1 / span 1;
 }
 
-#editor-field {
+textarea {
   display: block;
-  background-color: white;
-  border: 1px solid black;
+  background-color: whitesmoke;
+  border: 1px solid var(--night);
 
   font: 1em sans-serif;
   text-align: left;
@@ -176,19 +225,41 @@ form {
   width: 100%;
   height: 100%;
   /* Form outline */
-  padding: 1em;
+  padding: 0.5em;
   border: 1px solid #ccc;
   border-radius: 1em;
 }
 
 .reference {
   text-align: right;
-  background-color: white;
+  background-color: var(--alice-blue);
   opacity: 0.6;
 }
 
 .reference h6 {
   opacity: 1;
+}
+
+#leaderboard {
+  background-color: var(--khaki);
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+}
+
+#leaderboard tr {
+  min-height: 2.5rem;
+}
+
+#leaderboard th,td {
+  background-color: var(--alice-blue);
+  width: 5rem;
+  height: 2.5rem;
+  margin: 1px;
+}
+
+.ultimate-goal input[type=number] {
+  width: fit-content;
 }
 
 @media only screen and (max-width: 600px) {
