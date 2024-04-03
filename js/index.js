@@ -126,7 +126,14 @@ let MULTIPLIER_DIFFICULTY = 500;
 const levelCutoffs = (level) => Math.floor(95.238*level*level + 476.19*level);
 
 
-/** nrConstraintCheck checks if the value of an input field of type number meets all constraints and if so returns the number*/
+/** Checks if the value of an input field of type number meets all constraints.
+ * Returns the field value converted into a number or null if constraints were not met.
+ * @param {HTMLElement} numberInputElement 
+ * @param {number} min 
+ * @param {number} max 
+ * @param {number} multipleOf 
+ * @returns {number | null}
+ */
 function nrConstraintCheck(numberInputElement, min=0,max=Number.MAX_SAFE_INTEGER,multipleOf=1) {
   if (!numberInputElement.value) {
     window.alert(`Please enter an entire number between ${min} and ${max} that is a multiple of ${multipleOf}.`);
@@ -143,8 +150,8 @@ function nrConstraintCheck(numberInputElement, min=0,max=Number.MAX_SAFE_INTEGER
 }
 
 /**
- * storageNrConstraintCheck checks if a give value fulfills the requirements specified by min, max and multipleOf. 
- * It returns the value converted into a number.
+ * Checks if a give value fulfills the requirements specified by min, max and multipleOf. 
+ * Returns the value converted into a number or null if constraints were not met.
  * @param {string} value 
  * @param {number} min 
  * @param {number} max 
@@ -162,14 +169,71 @@ function storageNrConstraintCheck(valueStr, min=0, max=Number.MAX_SAFE_INTEGER,m
   return value;
 }
 
+/**
+ * Keeps selector at the end of the textarea field
+ */
+function resetSelector() {
+  const element = document.getElementById("editor-field");
+  const text = element.value;
+  const len = text.length;
+
+  element.setSelectionRange(len, len);
+}
+
+
+/* These functions load or save settings */
+/**
+ * Saves settings to local Storage
+ */
+function saveSettings() {
+  for (const setting in settings) {
+    localStorage.setItem(setting, settings[setting].value);
+  }
+}
+
+/**
+ * Loads settings from local Storage, and handles setting effects
+ */
+function loadSettings() {
+  for (const setting in settings) {
+    // Access value in local storage
+    const value = localStorage.getItem(setting);
+    if (value) {
+      // Convert value
+      const conversedValue = settings[setting].conversion(value);
+      // In case of detectable local storage corruption, use default value, otherwise use converted value
+      settings[setting].value = conversedValue || settings[setting].value;
+      try {
+        if (typeof settings[setting].value === "boolean") {
+          document.getElementById(settings[setting].id).checked = settings[setting].value;
+        } else {
+          document.getElementById(settings[setting].id).value = settings[setting].value;
+        }
+      } catch (error) {
+        //console.log(`${settings[setting].id} is not a valid id`);
+      }
+    }
+  }
+  // Treat special cases arising from settings
+  let el = document.getElementById("editor-field");
+  if (settings.enableTextDelete.value) {
+    el.addEventListener("click",resetSelector);
+  }
+  toggleCutoff();
+  toggleLongWordLength();
+}
+
+/**
+ * Saves the leaderboard to local Storage
+ */
 function saveLeaderboard() {
-  //JSON.stringify
-  console.log(JSON.stringify(leaderboard));
   localStorage.setItem("leaderboard",JSON.stringify(leaderboard));
 }
 
+/**
+ * Loads the leaderboard from local Storage
+ */
 function loadLeaderboard() {
-  //JSON.parse
   const leaderboardStr = localStorage.getItem("leaderboard") || "[]";
   leaderboard = JSON.parse(leaderboardStr);
   for (const entry of leaderboard) {
@@ -182,11 +246,17 @@ function loadLeaderboard() {
   }
 }
 
+/**
+ * Saves text to local Storage
+ */
 function saveText() {
   const text = document.getElementById("save").value;
   localStorage.setItem("lastSessionText",text);
 }
 
+/**
+ * Loads last session text from local Storage
+ */
 function loadText() {
   const text = localStorage.getItem("lastSessionText");
   if (text) {
@@ -194,18 +264,18 @@ function loadText() {
   }
 }
 
+/**
+ * Saves statistics to local Storage
+ */
 function saveStatistics() {
   for (const stat in statistics) {
     localStorage.setItem(stat,statistics[stat].value);
   }
 }
 
-function savePreferences() {
-  for (const pref in preferences) {
-    localStorage.setItem(pref,preferences[pref].value);
-  }
-}
-
+/**
+ * Loads statistics from local Storage
+ */
 function loadStatistics() {
   for (const stat in statistics) {
     let value = localStorage.getItem(stat);
@@ -222,6 +292,18 @@ function loadStatistics() {
   document.getElementById("until-next-level").innerHTML = statistics.untilNextLevel.value;
 }
 
+/**
+ * Saves display preferences to local Storage
+ */
+function savePreferences() {
+  for (const pref in preferences) {
+    localStorage.setItem(pref,preferences[pref].value);
+  }
+}
+
+/**
+ * Loads display references from local Storage
+ */
 function loadPreferences() {
   for (const pref in preferences) {
     let value = localStorage.getItem(pref);
@@ -234,6 +316,9 @@ function loadPreferences() {
   acceptDisplaySettings();
 }
 
+/**
+ * Updates progression in stat dropdown
+ */
 function updateStatProgression() {
   if (statistics.ultimateGoal.value !== 0) {
     let progress = Math.floor(statistics.ultimateWordCount.value / statistics.ultimateGoal.value);
@@ -243,6 +328,9 @@ function updateStatProgression() {
   }
 }
 
+/**
+ * Updates visible word counts
+ */
 function setWordCounts() {
   document.getElementById("words-until-now").innerHTML = statistics.ultimateWordCount.value;
   document.getElementById("word-count").innerHTML = statistics.sessionWords.value;
@@ -252,6 +340,9 @@ function setWordCounts() {
   updateStatProgression();
 }
 
+/**
+ * Updates indicator of how many more words need to be written before a level up and handles level up
+ */
 function setUntilNextLevel() {
   if (statistics.untilNextLevel.value === 0) {
     statistics.level.value += 1;
@@ -261,9 +352,12 @@ function setUntilNextLevel() {
   document.getElementById("until-next-level").innerHTML = statistics.untilNextLevel.value;
 }
 
-/** This function calculates how many points to add */
-function add_points(words) {
-  //This excludes punctuation not commonly used in English for now
+/**
+ * Calculates points awarded for punctuation.
+ * @param {string[]} words Words from text-field
+ * @returns {number} Points awarded for punctuation
+ */
+function countPunctuationPoints(words) {
   const emDash = "—";
   const enDash = "–";
   const punctuation = [".",",",":",";","!","?", emDash, enDash]; 
@@ -278,38 +372,61 @@ function add_points(words) {
     emDash: 10, 
     enDash: 10
   };
-
   let newPoints = 0;
 
-  // Calculate points given by punctuation
-  if (settings.rewardPunctuation.value) {
-    let foundPunctuation = [];
-    // find type and position of all punctuation characters
-    for (let i = 0; i < words.length; i++) {
-      if (punctuation.indexOf(words[i]) > -1) {
-        foundPunctuation.push([words[i], i]);
-      }
+  let foundPunctuation = [];
+  // find type and position of all punctuation characters
+  for (let i = 0; i < words.length; i++) {
+    if (punctuation.indexOf(words[i]) > -1) {
+      foundPunctuation.push([words[i], i]);
     }
-    // Count points
-    let lastPunctuationPosition = 0;
-    for (let i = 0; i < foundPunctuation.length; i++) {
-      let punctuationData = foundPunctuation[i];
-      // Only allow non-consecutive punctuation from giving points
-      if (punctuationData[1] !== lastPunctuationPosition + 1) {
-        newPoints += punctuationPoints[punctuationData[0]];
-      }
-      lastPunctuationPosition = punctuationData[1];
-    }
-
   }
-  // Calculate points given by words
+  // Count points
+  let lastPunctuationPosition = 0;
+  for (let i = 0; i < foundPunctuation.length; i++) {
+    let punctuationData = foundPunctuation[i];
+    // Only allow non-consecutive punctuation to give points
+    if (punctuationData[1] !== lastPunctuationPosition + 1) {
+      newPoints += punctuationPoints[punctuationData[0]];
+    }
+    lastPunctuationPosition = punctuationData[1];
+  }
+
+  return newPoints;
+}
+
+/**
+ * Checks stop condition for wordcount-based sessions
+ * @param {number} newPoints Points to be added before leaderboard update
+ */
+function handleWordCountDown(newPoints) {
+  remainingWordsInSession -= 1;
+  if (remainingWordsInSession === 0) {
+    let points = Number(document.getElementById("points").innerHTML) + newPoints;
+    addLeaderboardEntry(points);
+    resetSessionGoalSetter();
+  } else {
+    updateGoalProgression(remainingWordsInSession);
+  }
+}
+
+/**
+ * Calculates how many points are received for the written words.
+ * Also helps check stop condition for wordcount-based sessions.
+ * Requires punctuation points to correctly update the leaderboard in case the stop condition is met.
+ * @param {string[]} words Words from text-field
+ * @param {number} punctuationPoints Points received from punctuation
+ * @returns {number} Points received for words (punctuation points not included)
+ */
+function countWordPoints(words, punctuationPoints) {
+  let newPoints = 0;
   const wordArray = words.split(" ");
+  //Handle each word separately
   for (let i = 0; i < wordArray.length; i++) {
     // Count only alphanumerical letters
     const regex = /\p{L}+/gu;
     const lettersOnly = wordArray[i].matchAll(regex);
     
-
     for (const word of lettersOnly) {
       const wordLength = word[0].length;
       statistics.ultimateWordCount.value += 1;
@@ -330,98 +447,91 @@ function add_points(words) {
       } else {
         newPoints += wordLength;
       }
+      // Handle updating of sessions that count down words
       if (wordCountDown) {
-        remainingWordsInSession -= 1;
-        if (remainingWordsInSession === 0) {
-          let points = Number(document.getElementById("points").innerHTML) + newPoints;
-          addLeaderboardEntry(points);
-          resetSessionGoalSetter();
-        } else {
-          updateGoalProgression(remainingWordsInSession);
-        }
+        handleWordCountDown(newPoints + punctuationPoints);
       }
     }
   }
-
-  //update points
-  console.log("New points: ", newPoints);
-
-  let points = Number(document.getElementById("points").innerHTML);
-  points += multiplier * newPoints;
-  document.getElementById("points").innerHTML = points;
-
+  return newPoints;
 }
 
-/** This function pulls text from the text area and call add_points*/
+/** Calculates how many points to add based on the words received and the active multiplier. 
+ * Updates point field.
+ * @param {string[]} words Words from text-field
+*/
+function add_points(words) {
+  let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(words) : 0;
+  let wordPoints = countWordPoints(words,punctuationPoints);
+
+  //update points
+  let points = Number(document.getElementById("points").innerHTML);
+  points += multiplier * (wordPoints + punctuationPoints);
+  document.getElementById("points").innerHTML = points;
+}
+
+/**
+ * Calculates new multiplier resulting from the time that elapsed since the last input.
+ * @param {number} elapsedTime In milliseconds
+ */
+function multiplierUpdate(elapsedTime) {
+  if (elapsedTime < MULTIPLIER_DIFFICULTY) {
+    // We deserve a point bonus
+    if (timePaceSustained > MULTIPLIER_DIFFICULTY) {
+      multiplier += Math.floor(timePaceSustained / MULTIPLIER_DIFFICULTY);
+    } else {
+      multiplier += 1;
+    }
+    timePaceSustained += elapsedTime;
+    //Overflows?
+    timePaceSustained = timePaceSustained < 0 ? 0 : timePaceSustained;
+  } else {
+    // We deserve less point bonus
+    let inactiveSeconds = ~~(elapsedTime / 1000);
+    if (inactiveSeconds > 30) {
+      multiplier = 1;
+    } else {
+      let fraction = multiplier / 30;
+      multiplier -= ~~(fraction * inactiveSeconds);
+      multiplier = multiplier < 1 ? 1 : multiplier;
+    }
+  } 
+}
+
+/** Main functionality. 
+ * Pulls text from the textarea, calculates points, saves progress, handles text delete option*/
 function calculate() {
   const now = Date.now();
   const text = document.getElementById("editor-field").value;
   const deletedText = document.getElementById("save").value.slice(0,deletedTextPosition);
   document.getElementById("save").value = deletedText + text;
 
-  // Do nothing if the text did not get longer:
   if (text.length + deletedTextPosition <= latestSeparatorPosition) {
+    // The text did not get longer
     latestSeparatorPosition = text.length + deletedTextPosition;
   } else {
     //Text increased in length
+
+    //Weakly account for user potentially writing elsewhere than at the text end
     const selectionPosition = document.getElementById("editor-field").selectionStart;
     const lastChar = text.slice(selectionPosition -1, selectionPosition);
     const elapsedTime = now - lastTime;
-    
 
-    if (elapsedTime < MULTIPLIER_DIFFICULTY) {
-      // We deserve a point bonus
-      if (timePaceSustained > MULTIPLIER_DIFFICULTY) {
-        multiplier += Math.floor(timePaceSustained / MULTIPLIER_DIFFICULTY);
-      } else {
-        multiplier += 1;
-      }
-      timePaceSustained += elapsedTime;
-    } else {
-      // We deserve less point bonus
+    // update multiplier
+    multiplierUpdate(elapsedTime);
 
-      // How long have we not written? Judge severity
-      let severity = -1;
-      let remainder = Math.floor(elapsedTime / MULTIPLIER_DIFFICULTY);
-      // 500 -> 1, 1000 -> 2, 5000 -> 10, 45000 -> 90
-      let divider = 16;
-      while (remainder >= 1) {
-        // At multiplier_difficulty 500, this will increase severity at: 
-        // 500, 8000, 64000, 256000, 512000, 1024000, ... 
-        severity += 1;
-        remainder = Math.floor(remainder / divider);
-        divider = Math.floor(Math.max(2,divider / 2));
-      }
-
-      // Lose bonus multiplier for every second that depasses the threshold
-      //TODO
-
-      //No to this
-      multiplier = Math.max(1, multiplier - Math.floor(elapsedTime / Math.max(0.00001,(MULTIPLIER_DIFFICULTY / 10**severity))));
-      timePaceSustained -= elapsedTime * 10**severity;
-    } 
-
-    if (timePaceSustained < 0) {
-      timePaceSustained = 0;
-    }
-
-    //console.log(elapsedTime, multiplier);
-
+    // if a word is finished or a new paragraph starts, add points
     if (lastChar === " " || lastChar === "\n") {
-      //let newTextLength = latestSeparatorPosition - deletedTextPosition;
       let textLength = text.length + deletedTextPosition - lastTextLength;
       lastTextLength = text.length + deletedTextPosition;
-      console.log(`deletedTextLength: ${deletedTextPosition} textLength: ${textLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
-      //const newText = text.slice(latestSeparatorPosition - deletedTextPosition);
+      //console.log(`deletedTextLength: ${deletedTextPosition} textLength: ${textLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
       const newText = text.slice(selectionPosition - textLength, selectionPosition + 1);
-      console.log(newText, newText.length, deletedTextPosition, latestSeparatorPosition);
-      //latestSeparatorPosition = deletedTextPosition + text.length;
 
       add_points(newText);
       saveStatistics();
     }
 
-    // Optional delete long text feature 
+    // Optional delete long text feature
     if (settings.enableTextDelete.value && text.length > settings.MAX_CHARACTERS.value) {
       document.getElementById("editor-field").value = text.slice(-settings.MAX_CHARACTERS.value);
       deletedTextPosition += text.length - settings.MAX_CHARACTERS.value;
@@ -433,60 +543,12 @@ function calculate() {
   saveText();
 }
 
-function resetSelector(event) {
-  const element = document.getElementById("editor-field");
-  const text = element.value;
-  const len = text.length;
+/* These functions set and reset settings or preferences */
 
-  element.setSelectionRange(len, len);
-}
-
-
-/* These functions set and reset settings */
-function acceptGameSettings() {
-  if (!setEnableTextDelete() || !setRewardLongWords()) {
-    return;
-  }
-  setRewardPunctuation()
-  saveSettings();
-}
-
-function saveSettings() {
-  for (const setting in settings) {
-    console.log(setting, settings[setting].value);
-    localStorage.setItem(setting, settings[setting].value);
-  }
-}
-
-function loadSettings() {
-  for (const setting in settings) {
-    // Access value in local storage
-    const value = localStorage.getItem(setting);
-    if (value) {
-      // Convert value
-      const conversedValue = settings[setting].conversion(value);
-      // In case of detectable local storage corruption, use default value, otherwise use converted value
-      settings[setting].value = conversedValue || settings[setting].value;
-      try {
-        if (typeof settings[setting].value === "boolean") {
-          document.getElementById(settings[setting].id).checked = settings[setting].value;
-        } else {
-          document.getElementById(settings[setting].id).value = settings[setting].value;
-        }
-      } catch (error) {
-        console.log(`${settings[setting].id} is not a valid id`);
-      }
-    }
-  }
-  // Treat special cases arising from settings
-  let el = document.getElementById("editor-field");
-  if (settings.enableTextDelete.value) {
-    el.addEventListener("click",resetSelector);
-  }
-  toggleCutoff();
-  toggleLongWordLength();
-}
-
+/**
+ * Enables long word reward
+ * @returns {boolean} Success or fail because of incomplete input
+ */
 function setRewardLongWords() {
   if (document.getElementById(settings.rewardLongWords.id).checked) {
     settings.rewardLongWords.value = true;
@@ -497,6 +559,10 @@ function setRewardLongWords() {
   }
 }
 
+/**
+ * Sets long word reward
+ * @returns {boolean} Success or fail because of incomplete input
+ */
 function setLongWordCutoff() {
   const longWordLengthElement = document.getElementById("long-word-length");
   const longWordLength = nrConstraintCheck(longWordLengthElement,5,30);
@@ -508,6 +574,9 @@ function setLongWordCutoff() {
   }
 }
 
+/**
+ * Enables punctuation reward
+ */
 function setRewardPunctuation() {
   if (document.getElementById(settings.rewardPunctuation.id).checked) {
     settings.rewardPunctuation.value = true;
@@ -516,6 +585,10 @@ function setRewardPunctuation() {
   }
 }
 
+/**
+ * Enables deletion of text from textarea if the text is longer than what user wishes
+ * @returns {boolean} Success or fail because of incomplete input
+ */
 function setEnableTextDelete() {
   let el = document.getElementById("editor-field");
   if (document.getElementById(settings.enableTextDelete.id).checked) {
@@ -529,6 +602,10 @@ function setEnableTextDelete() {
   }
 }
 
+/**
+ * Sets how long text in textarea has to be before being deleted
+ * @returns {boolean} Success or fail because of incomplete input
+ */
 function setMaxCharacters() {
   let cutoffAtElement = document.getElementById(settings.MAX_CHARACTERS.id);
   const cutoffAt = nrConstraintCheck(cutoffAtElement,30);
@@ -540,6 +617,20 @@ function setMaxCharacters() {
   }
 }
 
+/**
+ * Accepts game settings
+ */
+function acceptGameSettings() {
+  if (!setEnableTextDelete() || !setRewardLongWords()) {
+    return;
+  }
+  setRewardPunctuation()
+  saveSettings();
+}
+
+/**
+ * Resets game settings
+ */
 function resetGameSettings() {
   settings.rewardLongWords.value = true;
   document.getElementById(settings.rewardLongWords.id).checked = true
@@ -554,6 +645,11 @@ function resetGameSettings() {
   document.getElementById(settings.LONG_WORD_CUTOFF.id).value = 8;
 }
 
+/**
+ * Toggles visibility of stats
+ * @param {string} checkId Id of the check that controls visibility
+ * @param {string} elementId Id of the element whose visibility should be toggled
+ */
 function toggleVisibility(checkId,elementId) {
   if (document.getElementById(checkId).checked) {
     document.getElementById(elementId).style.display = "none";
@@ -562,6 +658,11 @@ function toggleVisibility(checkId,elementId) {
   }
 }
 
+/**
+ * Toggles dark mode. Arguments only for compatibility with caller function
+ * @param {any} checkId 
+ * @param {any} elementId 
+ */
 function toggleDarkmode(checkId,elementId) {
   if (document.getElementById("dark-mode").checked) {
     const parent = document.getElementById("head");
@@ -580,6 +681,9 @@ function toggleDarkmode(checkId,elementId) {
   }
 }
 
+/**
+ * Accepts display settings and updates display of stats or darkmode
+ */
 function acceptDisplaySettings() {
   for (const pref in preferences) {
     preferences[pref].value = document.getElementById(preferences[pref].checkId).checked;
@@ -588,12 +692,18 @@ function acceptDisplaySettings() {
   savePreferences();
 }
 
+/**
+ * Resets display settings but does not update display until save is requested
+ */
 function resetDisplaySettings() {
   for (const pref in preferences) {
     document.getElementById(preferences[pref].checkId).checked = false;
   }
 }
 
+/**
+ * Accepts ultimate goal and updates stat progression
+ */
 function acceptUltimateGoal() {
   const wordGoalElement = document.getElementById("word-goal");
   const newGoal = nrConstraintCheck(wordGoalElement,1000,Number.MAX_SAFE_INTEGER,1000);
@@ -607,9 +717,13 @@ function acceptUltimateGoal() {
   }
 }
 
+/*These functions toggle showing different sections*/
+
+/**
+ * Toggles showing the About section
+ */
 function toggleShowAbout() {
   const displayVal = document.getElementById("about").style.display;
-  console.log(displayVal);
   if (displayVal === "block") {
     document.getElementById("about").style.display = "none";
   } else {
@@ -619,9 +733,10 @@ function toggleShowAbout() {
   }
 }
 
+/**
+ * Toggles showing the Stats section
+ */
 function toggleShowStats() {
-  //updateStats();
-
   const displayVal = document.getElementById("stats").style.display;
   if (displayVal === "block") {
     document.getElementById("stats").style.display = "none";
@@ -632,6 +747,9 @@ function toggleShowStats() {
   }
 }
 
+/**
+ * Toggles showing the Settings section
+ */
 function toggleShowSettings() {
   const displayVal = document.getElementById("settings").style.display;
   if (displayVal === "block") {
@@ -645,6 +763,11 @@ function toggleShowSettings() {
   //document.getElementById("long-words").focus({ focusVisible: false });
 }
 
+/*These functions handle input field disabling when a setting check requires it*/
+
+/**
+ * Toggles disabling the input field for when to start deleting text
+ */
 function toggleCutoff() {
   const cutoffCheckEl = document.getElementById("cutoff");
   const cutoffValueEl = document.getElementById("cutoff-at");
@@ -655,6 +778,9 @@ function toggleCutoff() {
   }
 }
 
+/**
+ * Toggles disabling the input field for what to consider a long word
+ */
 function toggleLongWordLength() {
   const longWordCheckEl = document.getElementById("long-words");
   const longWordValueEl = document.getElementById("long-word-length");
@@ -665,6 +791,10 @@ function toggleLongWordLength() {
   }
 }
 
+/**
+ * Adds a leaderboard entry into the leaderboard and saves the new leaderboard
+ * @param {number} points Points to add to the leaderboard entry
+ */
 function addLeaderboardEntry(points) {
   const date = new Date();
   const day = date.getDate();
@@ -688,6 +818,12 @@ function addLeaderboardEntry(points) {
   saveLeaderboard();
 }
 
+/* These functions handle setting session goals */
+
+/**
+ * Updates the session goal progression
+ * @param {number} newValue Leftover time/words
+ */
 function updateGoalProgression(newValue) {
   if (selectedMeasure === "minutes") {
     let hours = ~~(remainingTimeInSession / 3600);
@@ -705,6 +841,9 @@ function updateGoalProgression(newValue) {
   }
 }
 
+/**
+ * Resets html elements and variables connected to session goal setting
+ */
 function resetSessionGoalSetter() {
   document.getElementById("points").innerHTML = 0;
 
@@ -727,11 +866,13 @@ function resetSessionGoalSetter() {
   document.getElementById("goal-indicator").innerHTML = "Left:"
 }
 
+/**
+ * Callback function: Updates the timer of session goals
+ */
 function updateTimer() {
   remainingTimeInSession -= 1;
   updateGoalProgression(remainingTimeInSession);
   if (remainingTimeInSession === 0) {
-    console.log(remainingTimeInSession);
     clearInterval(functionId);
     let points = document.getElementById("points").innerHTML;
     addLeaderboardEntry(points);
@@ -739,6 +880,9 @@ function updateTimer() {
   }
 }
 
+/**
+ * Interrupts time/wordcount-based sessions
+ */
 function stopSession() {
   if (functionId) {
     clearInterval(functionId);
@@ -750,12 +894,18 @@ function stopSession() {
   resetSessionGoalSetter();
 }
 
+/**
+ * Stops sessions with no session goal
+ */
 function stopFreeSession() {
   let points = document.getElementById("points").innerHTML;
   addLeaderboardEntry(points);
   resetSessionGoalSetter();
 }
 
+/**
+ * Starts a time/wordcount-based session based on the input parameters set
+ */
 function startSession() {
   // Get field value
   const sessionGoalInput = document.getElementById("session-goal");
@@ -792,6 +942,9 @@ function startSession() {
   freeBtn.disabled = true;
 }
 
+/**
+ * Starts a session without time/wordcount goal
+ */
 function startFreeSession() {
   sessionGoal = "No target";
   let freeBtn = document.getElementById("free-session-goal-btn");
@@ -802,25 +955,32 @@ function startFreeSession() {
   btn.disabled = true;
 }
 
+/**
+ * Updates default text of session goal input field when minutes check is set
+ */
 function changeToMinutes() {
   if (document.getElementById("session-goal").value === 500) {
     document.getElementById("session-goal").value = 30;
   }
 }
 
+/**
+ * Updates default text of session goal input field when words check is set
+ */
 function changeToWords() {
   if (document.getElementById("session-goal").value === 30) {
     document.getElementById("session-goal").value = 500;
   }
 }
 
+// Load all from local storage
 loadSettings();
 loadStatistics();
 loadPreferences();
 loadText();
 loadLeaderboard();
 
-
+// First load
 if (statistics.untilNextLevel.value === 0) {
   statistics.untilNextLevel.value = levelCutoffs(1);
 }
