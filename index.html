@@ -17,69 +17,76 @@
   </head>
   <body>
     <header>
+      <nav>
+        <ul>
+          <li><span onclick="toggleShowAbout()">About<span></li>
+          <li><span onclick="toggleShowStats()">Stats<span></li>
+          <li><span onclick="toggleShowSettings()">Settings</span></li>
+        </ul>
+      </nav>
+    </header>
+    <section class="hero">
       <h1>Write to Level UP</h1>
       <div class="reference"><h6>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></h6></div>
-    </header>
-    <nav>
-      <ul>
-        <li><span onclick="toggleShowAbout()">About<span></li>
-        <li><span onclick="toggleShowStats()">Stats<span></li>
-        <li><span onclick="toggleShowSettings()">Settings</span></li>
-      </ul>
-    </nav>
-    <section id="settings">
-      <form class="game-features">
-        <h3>Game features</h3>
-        <div class="checkmark-settings">
-          <input type="checkbox" id="cutoff" value="delete text" onclick="toggleCutoff()"/>
-          <label for="cutoff">Delete text in textbox</label><br>
+    </section>
+    <section class="expandable-section" id="settings">
+      <form>
+        <div class="game-features">
+          <h3>Game features</h3>
+          <div class="checkmark-settings">
+            <input type="checkbox" id="cutoff" value="delete text" onclick="toggleCutoff()"/>
+            <label for="cutoff">Delete text in textbox</label><br>
 
-          <input type="checkbox" id="long-words" value="reward long words" onclick="toggleLongWordLength()" checked/>
-          <label for="long-words">Reward long words</label><br>
+            <input type="checkbox" id="long-words" value="reward long words" onclick="toggleLongWordLength()" checked/>
+            <label for="long-words">Reward long words</label><br>
 
-          <input type="checkbox" id="punctuation" value="reward punctuation" checked/>
-          <label for="punctuation">Reward punctuation</label><br>
+            <input type="checkbox" id="punctuation" value="reward punctuation" checked/>
+            <label for="punctuation">Reward punctuation</label><br>
+
+            <input type="checkbox" id="point-multiplier" value="enable point multiplier" checked/>
+            <label for="point-multiplier">Enable point multiplier</label><br>
+          </div>
+
+          <div class="number-settings">
+            <label for="cutoff-at">Delete text if exceeds x characters</label>
+            <input type="number" id="cutoff-at" min="30" value="50" disabled/>
+
+            <label for="long-word-length">Long word minimum length</label>
+            <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"/>
+          </div>
+          <!--Buttons-->
+          <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
+          <input type="button" value="Reset" onclick="resetGameSettings()"/><br>
         </div>
+        <hr/>
+        <div class="display-preferences">
+          <h3>Display Preferences</h3>
+          <div class="checkmark-settings">
+            <input type="checkbox" id="dark-mode">
+            <label for="dark-mode">Dark mode</label><br>
 
-        <div class="number-settings">
-          <label for="cutoff-at">Delete text if exceeds x characters</label>
-          <input type="number" id="cutoff-at" min="30" value="50" disabled/>
+            <input type="checkbox" id="hide-points"/>
+            <label for="hide-points">Hide Points</label><br>
 
-          <label for="long-word-length">Long word minimum length</label>
-          <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"/>
+            <input type="checkbox" id="hide-level"/>
+            <label for="hide-level">Hide Level</label><br>
+
+            <input type="checkbox" id="hide-session-words"/>
+            <label for="hide-session-words">Hide Session Words</label><br>
+
+            <input type="checkbox" id="hide-alltime-words"/>
+            <label for="hide-alltime-words">Hide Alltime Words</label><br>
+          </div>
+          <input type="button" value="Apply Settings" onclick="acceptDisplaySettings()"/>
+          <input type="button" value="Reset" onclick="resetDisplaySettings()"/><br>
         </div>
-        <!--Buttons-->
-        <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
-        <input type="button" value="Reset" onclick="resetGameSettings()"/><br>
-      </form>
-
-      <form class="display-preferences">
-        <h3>Display Preferences</h3>
-        <div class="checkmark-settings">
-          <input type="checkbox" id="dark-mode">
-          <label for="dark-mode">Dark mode</label><br>
-
-          <input type="checkbox" id="hide-points"/>
-          <label for="hide-points">Hide Points</label><br>
-
-          <input type="checkbox" id="hide-level"/>
-          <label for="hide-level">Hide Level</label><br>
-
-          <input type="checkbox" id="hide-session-words"/>
-          <label for="hide-session-words">Hide Session Words</label><br>
-
-          <input type="checkbox" id="hide-alltime-words"/>
-          <label for="hide-alltime-words">Hide Alltime Words</label><br>
-        </div>
-        <input type="button" value="Apply Settings" onclick="acceptDisplaySettings()"/>
-        <input type="button" value="Reset" onclick="resetDisplaySettings()"/><br>
       </form>
 
     </section>
-    <section id="about" onclick="toggleShowAbout()">
+    <section class="expandable-section" id="about" onclick="toggleShowAbout()">
       <p>This application was programmed by a person with a dual passion for coding and writing.<br> It is meant for rapid outputting of words, in brainstorm or free-flow sessions.<br> Points and levels exist solely for motivational purposes. Check the settings if you wish to disable one or all of them.</p>
     </section>
-    <section id="stats">
+    <section class="expandable-section" id="stats">
       <form class="ultimate-goal">
         <label for="word-goal">Ultimate Word Goal</label><br>
         <input type="number" id="word-goal" min="10000" step="1000" value="" placeholder="Multiple of 1000"/><br>
@@ -97,9 +104,10 @@
         <input type="radio" id="words" name="measure" value="words" onclick="changeToWords()" checked/>
         <label for="words">Words</label>
         <input type="radio" id="minutes" name="measure" value="minutes" onclick="changeToMinutes()"/>
-        <label for="minutes">Minutes</label>
+        <label for="minutes">Minutes</label><br/>
         <input type="button" id="session-goal-btn" value="Set session goal" onclick="startSession()"/>
         <input type="button" id="free-session-goal-btn" value="Write without goal" onclick="startFreeSession()"/>
+        <hr/>
         <h2 id="goal-indicator">Left:</h4>
       </form>
     </section>
@@ -110,19 +118,19 @@
         </form>
       </section>
       <section class="game-box">
-        <div class="stat" id="point-stat">
+        <div class="stat">
           <h2>Points:</h2>
           <p id="points">0</p>
         </div>
-        <div class="stat" id="word-stat">
+        <div class="stat">
           <h2>Word Count:</h2>
           <p id="word-count">0</p>
         </div>
-        <div class="stat" id="level-stat">
+        <div class="stat">
           <h2>Level:</h2>
           <p id="level">0</p>
         </div>
-        <div class="stat" id="alltime-word-stat">
+        <div class="stat">
           <h2>All-time Words:</h2>
           <p id="alltime-word-count">0</p>
         </div>

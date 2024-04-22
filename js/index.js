@@ -1,6 +1,7 @@
 /* code relevant */
 let latestSeparatorPosition = 0;
 let deletedTextPosition = 0;
+let points = 0;
 let lastUpdate = 0;
 let multiplier = 1; 
 let lastTime = Date.now();
@@ -43,6 +44,11 @@ let leaderboard = [];
 
 /* Options */
 const settings = {
+  enablePointMultiplier : {
+    id : "point-multiplier",
+    value : true,
+    conversion(value) { return value === "true" }
+  },
   rewardLongWords : {
     id : "long-words",
     value : true,
@@ -354,7 +360,7 @@ function setUntilNextLevel() {
 
 /**
  * Calculates points awarded for punctuation.
- * @param {string[]} words Words from text-field
+ * @param {string} words Words from text-field
  * @returns {number} Points awarded for punctuation
  */
 function countPunctuationPoints(words) {
@@ -376,6 +382,9 @@ function countPunctuationPoints(words) {
 
   let foundPunctuation = [];
   // find type and position of all punctuation characters
+  // let punctuationRegex = /[.,:;!–?—]/g
+  // let regexFoundPunctuation = words.match(punctuationRegex);
+  // console.log(regexFoundPunctuation);
   for (let i = 0; i < words.length; i++) {
     if (punctuation.indexOf(words[i]) > -1) {
       foundPunctuation.push([words[i], i]);
@@ -399,10 +408,11 @@ function countPunctuationPoints(words) {
  * Checks stop condition for wordcount-based sessions
  * @param {number} newPoints Points to be added before leaderboard update
  */
-function handleWordCountDown(newPoints) {
-  remainingWordsInSession -= 1;
-  if (remainingWordsInSession === 0) {
-    let points = Number(document.getElementById("points").innerHTML) + newPoints;
+function handleWordCountDown(nrNewWords, newPoints) {
+  remainingWordsInSession -= nrNewWords;
+  if (remainingWordsInSession <= 0) {
+    //let points = Number(document.getElementById("points").innerHTML) + newPoints;
+    points += newPoints;
     addLeaderboardEntry(points);
     resetSessionGoalSetter();
   } else {
@@ -415,20 +425,18 @@ function handleWordCountDown(newPoints) {
  * Also helps check stop condition for wordcount-based sessions.
  * Requires punctuation points to correctly update the leaderboard in case the stop condition is met.
  * @param {string[]} words Words from text-field
- * @param {number} punctuationPoints Points received from punctuation
  * @returns {number} Points received for words (punctuation points not included)
  */
-function countWordPoints(words, punctuationPoints) {
+function countLongWordPoints(wordsArray) {
   let newPoints = 0;
-  const wordArray = words.split(" ");
   //Handle each word separately
-  for (let i = 0; i < wordArray.length; i++) {
+  for (const word of wordsArray) {
     // Count only alphanumerical letters
     const regex = /\p{L}+/gu;
-    const lettersOnly = wordArray[i].matchAll(regex);
+    const lettersOnly = word.matchAll(regex);
     
-    for (const word of lettersOnly) {
-      const wordLength = word[0].length;
+    for (const wordPart of lettersOnly) {
+      const wordLength = wordPart[0].length;
       statistics.ultimateWordCount.value += 1;
       statistics.sessionWords.value += 1;
       statistics.untilNextLevel.value -= 1;
@@ -436,20 +444,11 @@ function countWordPoints(words, punctuationPoints) {
       setUntilNextLevel();
 
       if (settings.rewardLongWords.value) {
-        // give 1 point for every character in words shorter than LONG_WORD_CUTOFF
-        // give 2 points for every character beyond the cutoff, unless the word is too long
+        // give 1 additional point for every character in words longer than LONG_WORD_CUTOFF
         if (wordLength >= settings.LONG_WORD_CUTOFF.value) {
           // Words longer than 30 characters don't count
-          newPoints += settings.LONG_WORD_CUTOFF.value - 1  + 2 * (Math.min(wordLength,30) - settings.LONG_WORD_CUTOFF.value + 1);
-        } else {
-          newPoints += wordLength;
-        }
-      } else {
-        newPoints += wordLength;
-      }
-      // Handle updating of sessions that count down words
-      if (wordCountDown) {
-        handleWordCountDown(newPoints + punctuationPoints);
+          newPoints += Math.min(wordLength,30) - settings.LONG_WORD_CUTOFF.value + 1;
+        } 
       }
     }
   }
@@ -462,10 +461,14 @@ function countWordPoints(words, punctuationPoints) {
 */
 function add_points(words) {
   let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(words) : 0;
-  let wordPoints = countWordPoints(words,punctuationPoints);
-
+  const wordsArray = words.split(" ");
+  let wordPoints = countLongWordPoints(wordsArray);
+  // Handle updating of sessions that count down words
+  if (wordCountDown) {
+    handleWordCountDown(wordsArray.length, punctuationPoints + wordPoints);
+  }
   //update points
-  let points = Number(document.getElementById("points").innerHTML);
+  //let points = Number(document.getElementById("points").innerHTML);
   points += multiplier * (wordPoints + punctuationPoints);
   document.getElementById("points").innerHTML = points;
 }
@@ -520,7 +523,14 @@ function calculate() {
     // update multiplier
     multiplierUpdate(elapsedTime);
 
-    // if a word is finished or a new paragraph starts, add points
+    // add points for new characters (if they were not pasted in)
+    if (lastChar != " ") {
+      // reward anything but spaces
+      points += multiplier * 1;
+      document.getElementById("points").innerHTML = points;
+    }
+
+    // if a word is finished or a new paragraph starts, add word and punctuation points
     if (lastChar === " " || lastChar === "\n") {
       let textLength = text.length + deletedTextPosition - lastTextLength;
       lastTextLength = text.length + deletedTextPosition;
@@ -731,6 +741,7 @@ function toggleShowAbout() {
     document.getElementById("stats").style.display = "none";
     document.getElementById("settings").style.display = "none";
   }
+  window.scrollTo(0, 100);
 }
 
 /**
@@ -745,6 +756,7 @@ function toggleShowStats() {
     document.getElementById("settings").style.display = "none";
     document.getElementById("about").style.display = "none";
   }
+  window.scrollTo(0, 100);
 }
 
 /**
@@ -759,7 +771,7 @@ function toggleShowSettings() {
     document.getElementById("stats").style.display = "none";
     document.getElementById("about").style.display = "none";
   }
-
+  window.scrollTo(0, 100);
   //document.getElementById("long-words").focus({ focusVisible: false });
 }
 
@@ -846,6 +858,7 @@ function updateGoalProgression(newValue) {
  */
 function resetSessionGoalSetter() {
   document.getElementById("points").innerHTML = 0;
+  points = 0;
 
   let btn = document.getElementById("session-goal-btn");
   btn.value = "Set session goal";
@@ -874,7 +887,6 @@ function updateTimer() {
   updateGoalProgression(remainingTimeInSession);
   if (remainingTimeInSession === 0) {
     clearInterval(functionId);
-    let points = document.getElementById("points").innerHTML;
     addLeaderboardEntry(points);
     resetSessionGoalSetter();
   }
@@ -888,7 +900,6 @@ function stopSession() {
     clearInterval(functionId);
     functionId = undefined;
   } 
-  let points = document.getElementById("points").innerHTML;
   sessionGoal += "; interrupted";
   addLeaderboardEntry(points);
   resetSessionGoalSetter();
@@ -898,7 +909,6 @@ function stopSession() {
  * Stops sessions with no session goal
  */
 function stopFreeSession() {
-  let points = document.getElementById("points").innerHTML;
   addLeaderboardEntry(points);
   resetSessionGoalSetter();
 }
