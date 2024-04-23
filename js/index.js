@@ -684,7 +684,14 @@ function toggleDarkmode(checkId,elementId) {
     const parent = document.getElementById("head");
     let style = document.createElement("link");
     style.setAttribute("id","darkmode");
-    let baseUrl = window.location.origin;
+
+    //There must be better ways to do this
+    let host = window.location.host;
+    let extension = "";
+    if (host === "nathaliebleser.github.io") {
+      extension += "/WriteUP";
+    }
+    let baseUrl = window.location.origin + extension;
     style.setAttribute("href",baseUrl + "/css/darkmode.css");
     style.setAttribute("rel","stylesheet");
     style.setAttribute("type","text/css");
