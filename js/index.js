@@ -860,10 +860,18 @@ function updateGoalProgression(newValue) {
   }
 }
 
+function toggleSessionStartElements() {
+  let goalIndicator = document.getElementById("goal-indicator");
+  let sessionGoalSettings = document.getElementById("session-goal-settings");
+  goalIndicator.style.display = goalIndicator.style.display === "block" ? "none" : "block";
+  sessionGoalSettings.style.display = sessionGoalSettings.style.display === "none" ? "block" : "none";
+}
+
 /**
  * Resets html elements and variables connected to session goal setting
  */
 function resetSessionGoalSetter() {
+  toggleSessionStartElements();
   document.getElementById("points").innerHTML = 0;
   points = 0;
 
@@ -883,7 +891,7 @@ function resetSessionGoalSetter() {
 
   multiplier = 1;
 
-  document.getElementById("goal-indicator").innerHTML = "Left:"
+  document.getElementById("goal-indicator").innerHTML = "Left:";
 }
 
 /**
@@ -957,6 +965,7 @@ function startSession() {
   btn.addEventListener("click", stopSession);
   let freeBtn = document.getElementById("free-session-goal-btn");
   freeBtn.disabled = true;
+  toggleSessionStartElements();
 }
 
 /**
@@ -970,13 +979,14 @@ function startFreeSession() {
   freeBtn.addEventListener("click", stopFreeSession);
   let btn = document.getElementById("session-goal-btn");
   btn.disabled = true;
+  toggleSessionStartElements();
 }
 
 /**
  * Updates default text of session goal input field when minutes check is set
  */
 function changeToMinutes() {
-  if (document.getElementById("session-goal").value === 500) {
+  if (document.getElementById("session-goal").value === "500") {
     document.getElementById("session-goal").value = 30;
   }
 }
@@ -985,7 +995,7 @@ function changeToMinutes() {
  * Updates default text of session goal input field when words check is set
  */
 function changeToWords() {
-  if (document.getElementById("session-goal").value === 30) {
+  if (document.getElementById("session-goal").value === "30") {
     document.getElementById("session-goal").value = 500;
   }
 }
@@ -1001,3 +1011,8 @@ loadLeaderboard();
 if (statistics.untilNextLevel.value === 0) {
   statistics.untilNextLevel.value = levelCutoffs(1);
 }
+
+let btn = document.getElementById("session-goal-btn");
+btn.addEventListener("click", startSession);
+let freeBtn = document.getElementById("free-session-goal-btn");
+freeBtn.addEventListener("click", startFreeSession);

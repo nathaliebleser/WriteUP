@@ -280,6 +280,14 @@ th, td {
   width: fit-content;
 }
 
+#session-goal-settings {
+  display: block;
+}
+
+#goal-indicator {
+  display: none;
+}
+
 @keyframes multiplierUpdate {
   from {
     color: red;

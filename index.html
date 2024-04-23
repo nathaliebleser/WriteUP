@@ -27,13 +27,13 @@
     </header>
     <section class="hero">
       <h1>Write to Level UP</h1>
-      <div class="reference"><p>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></p></div>
+      <div class="reference" role="presentation"><p>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></p></div>
     </section>
     <section class="expandable-section" id="settings">
       <form class="main-settings">
-        <div class="game-features">
+        <div class="game-features" role="presentation">
           <h3>Game features</h3>
-          <div class="checkmark-settings">
+          <div class="checkmark-settings" role="presentation">
             <input type="checkbox" id="cutoff" value="delete text" onclick="toggleCutoff()"/>
             <label for="cutoff">Delete text in textbox</label><br>
 
@@ -47,7 +47,7 @@
             <label for="point-multiplier">Enable point multiplier</label><br>
           </div>
 
-          <div class="number-settings">
+          <div class="number-settings" role="presentation">
             <label for="cutoff-at">Delete text if exceeds x characters</label>
             <input type="number" id="cutoff-at" min="30" value="50" disabled/>
 
@@ -58,9 +58,9 @@
           <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
           <input type="button" value="Reset" onclick="resetGameSettings()"/><br>
         </div>
-        <div class="display-preferences">
+        <div class="display-preferences" role="presentation">
           <h3>Display Preferences</h3>
-          <div class="checkmark-settings">
+          <div class="checkmark-settings" role="presentation">
             <input type="checkbox" id="dark-mode">
             <label for="dark-mode">Dark mode</label><br>
 
@@ -98,14 +98,16 @@
     </section>
     <section id="goals">
       <form class="session-goal">
-        <label for="session-goal">Session Goal</label>
-        <input type="number" id="session-goal" min="1" value="500"/>
-        <input type="radio" id="words" name="measure" value="words" onclick="changeToWords()" checked/>
-        <label for="words">Words</label>
-        <input type="radio" id="minutes" name="measure" value="minutes" onclick="changeToMinutes()"/>
-        <label for="minutes">Minutes</label><br/>
-        <input type="button" id="session-goal-btn" value="Set session goal" onclick="startSession()"/>
-        <input type="button" id="free-session-goal-btn" value="Write without goal" onclick="startFreeSession()"/>
+        <div id="session-goal-settings">
+          <label for="session-goal">Session Goal</label>
+          <input type="number" id="session-goal" min="1" value="500"/>
+          <input type="radio" id="words" name="measure" value="words" onclick="changeToWords()" checked/>
+          <label for="words" aria-hidden="true">Words</label>
+          <input type="radio" id="minutes" name="measure" value="minutes" onclick="changeToMinutes()"/>
+          <label for="minutes" aria-hidden="true">Minutes</label><br/>
+        </div>
+        <input type="button" id="session-goal-btn" value="Set session goal" />
+        <input type="button" id="free-session-goal-btn" value="Write without goal" />
         <h2 id="goal-indicator">Left:</h2>
       </form>
     </section>
@@ -118,20 +120,20 @@
       </section>
       <section class="main-box">
         <h2>Stats</h2>
-        <div class="game-box">
-          <div class="stat">
+        <div class="game-box" role="presentation">
+          <div class="stat" role="presentation">
             <h3>Points:<span id="multiplier-anchor"><p id="multiplier">x1</p></span></h3>
             <p id="points">0</p>
           </div>
-          <div class="stat">
+          <div class="stat" role="presentation">
             <h3>Word Count:</h3>
             <p id="word-count">0</p>
           </div>
-          <div class="stat">
+          <div class="stat" role="presentation">
             <h3>Level:</h3>
             <p id="level">0</p>
           </div>
-          <div class="stat">
+          <div class="stat" role="presentation">
             <h3>All-time Words:</h3>
             <p id="alltime-word-count">0</p>
           </div>
@@ -145,7 +147,7 @@
       </section>
       <section class="main-box">
         <h2>Leaderboard</h2>
-        <div class="scrollable">
+        <div class="scrollable" role="presentation">
           <table class="leaderboard">
             <thead>
               <tr>
