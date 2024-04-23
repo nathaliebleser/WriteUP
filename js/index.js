@@ -126,7 +126,7 @@ const preferences = {
 }
 
 let MAX_ELAPSED_TIME = 30*1000;
-let MULTIPLIER_DIFFICULTY = 500;
+let MULTIPLIER_DIFFICULTY = 100;
 
 // This means level 30 is reached after about 99999 words, while level 100 is reached after 999999 words
 const levelCutoffs = (level) => Math.floor(95.238*level*level + 476.19*level);
@@ -243,12 +243,20 @@ function loadLeaderboard() {
   const leaderboardStr = localStorage.getItem("leaderboard") || "[]";
   leaderboard = JSON.parse(leaderboardStr);
   for (const entry of leaderboard) {
-    document.getElementById("leaderboard").innerHTML += `
+    let table = document.getElementById("leaderboard");
+    let row = table.insertRow(0);
+    let cell0 = row.insertCell(0);
+    let cell1 = row.insertCell(1);
+    let cell2 = row.insertCell(2);
+    cell0.innerHTML = entry.date;
+    cell1.innerHTML = entry.points;
+    cell2.innerHTML = entry.settings;
+    /*.innerHTML += `
     <tr>
       <td>${entry.date}</td>
       <td>${entry.points}</td>
       <td>${entry.settings}</td>
-    </tr>`;
+    </tr>`;*/
   }
 }
 
@@ -473,32 +481,25 @@ function add_points(words) {
   document.getElementById("points").innerHTML = points;
 }
 
+function showMultiplierUpdate() {
+  let multiplierEl = document.getElementById("multiplier");
+  multiplierEl.innerHTML="x" + multiplier;
+  multiplierEl.classList.remove("increased-multiplier");
+  window.setTimeout( () => {
+    multiplierEl.classList.add("increased-multiplier");
+  },50);
+}
+
 /**
  * Calculates new multiplier resulting from the time that elapsed since the last input.
  * @param {number} elapsedTime In milliseconds
  */
 function multiplierUpdate(elapsedTime) {
-  if (elapsedTime < MULTIPLIER_DIFFICULTY) {
-    // We deserve a point bonus
-    if (timePaceSustained > MULTIPLIER_DIFFICULTY) {
-      multiplier += Math.floor(timePaceSustained / MULTIPLIER_DIFFICULTY);
-    } else {
-      multiplier += 1;
-    }
-    timePaceSustained += elapsedTime;
-    //Overflows?
-    timePaceSustained = timePaceSustained < 0 ? 0 : timePaceSustained;
-  } else {
-    // We deserve less point bonus
-    let inactiveSeconds = ~~(elapsedTime / 1000);
-    if (inactiveSeconds > 30) {
-      multiplier = 1;
-    } else {
-      let fraction = multiplier / 30;
-      multiplier -= ~~(fraction * inactiveSeconds);
-      multiplier = multiplier < 1 ? 1 : multiplier;
-    }
-  } 
+  // Increase multiplier for every 100 words
+  if (~~((statistics.sessionWords.value + 1) / MULTIPLIER_DIFFICULTY) > multiplier - 1) {
+    multiplier += 1;
+    showMultiplierUpdate();
+  }
 }
 
 /** Main functionality. 
@@ -521,7 +522,9 @@ function calculate() {
     const elapsedTime = now - lastTime;
 
     // update multiplier
-    multiplierUpdate(elapsedTime);
+    if (settings.enablePointMultiplier.value) {
+      multiplierUpdate(elapsedTime);
+    }
 
     // add points for new characters (if they were not pasted in)
     if (lastChar != " ") {
@@ -642,8 +645,10 @@ function acceptGameSettings() {
  * Resets game settings
  */
 function resetGameSettings() {
+  settings.enablePointMultiplier.value = true;
+  document.getElementById(settings.enablePointMultiplier.id).checked = true;
   settings.rewardLongWords.value = true;
-  document.getElementById(settings.rewardLongWords.id).checked = true
+  document.getElementById(settings.rewardLongWords.id).checked = true;
   settings.LONG_WORD_CUTOFF.value = 8;
   document.getElementById(settings.LONG_WORD_CUTOFF.id).value = 8;
 
@@ -812,8 +817,10 @@ function addLeaderboardEntry(points) {
   const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
-  const hour = date.getHours();
-  const min = date.getMinutes();
+  let hour = date.getHours();
+  hour = String(hour).padStart(2);
+  let min = date.getMinutes();
+  min = String(min).padStart(2);
   const newEntry = {
     date: `${day}.${month}.${year} ${hour}:${min}`,
     points,

@@ -27,10 +27,10 @@
     </header>
     <section class="hero">
       <h1>Write to Level UP</h1>
-      <div class="reference"><h6>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></h6></div>
+      <div class="reference"><p>Photo by <a href="https://unsplash.com/@havasuartist?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Susan Weber</a> on <a href="https://unsplash.com/photos/white-printer-paper-on-black-typewriter-MrtjMjQZQRw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a></p></div>
     </section>
     <section class="expandable-section" id="settings">
-      <form>
+      <form class="main-settings">
         <div class="game-features">
           <h3>Game features</h3>
           <div class="checkmark-settings">
@@ -58,7 +58,6 @@
           <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
           <input type="button" value="Reset" onclick="resetGameSettings()"/><br>
         </div>
-        <hr/>
         <div class="display-preferences">
           <h3>Display Preferences</h3>
           <div class="checkmark-settings">
@@ -107,51 +106,64 @@
         <label for="minutes">Minutes</label><br/>
         <input type="button" id="session-goal-btn" value="Set session goal" onclick="startSession()"/>
         <input type="button" id="free-session-goal-btn" value="Write without goal" onclick="startFreeSession()"/>
-        <hr/>
-        <h2 id="goal-indicator">Left:</h4>
+        <h2 id="goal-indicator">Left:</h2>
       </form>
     </section>
     <main>
-      <section class="editor">
+      <section class="editor main-box">
+        <h2>Write here</h2>
         <form>
           <textarea id="editor-field" name="editor" placeholder="Write something here (but make sure to save any text from a previous session before)" oninput="calculate()"></textarea>
         </form>
       </section>
-      <section class="game-box">
-        <div class="stat">
-          <h2>Points:</h2>
-          <p id="points">0</p>
-        </div>
-        <div class="stat">
-          <h2>Word Count:</h2>
-          <p id="word-count">0</p>
-        </div>
-        <div class="stat">
-          <h2>Level:</h2>
-          <p id="level">0</p>
-        </div>
-        <div class="stat">
-          <h2>All-time Words:</h2>
-          <p id="alltime-word-count">0</p>
+      <section class="main-box">
+        <h2>Stats</h2>
+        <div class="game-box">
+          <div class="stat">
+            <h3>Points:<span id="multiplier-anchor"><p id="multiplier">x1</p></span></h3>
+            <p id="points">0</p>
+          </div>
+          <div class="stat">
+            <h3>Word Count:</h3>
+            <p id="word-count">0</p>
+          </div>
+          <div class="stat">
+            <h3>Level:</h3>
+            <p id="level">0</p>
+          </div>
+          <div class="stat">
+            <h3>All-time Words:</h3>
+            <p id="alltime-word-count">0</p>
+          </div>
         </div>
       </section>
-      <section class="saved-text">
+      <section class="saved-text main-box">
+        <h2>Copy from here</h2>
         <form>
           <textarea id="save" name="savedText" placeholder="Here is where your text will show up so you can copy and save it later" readonly></textarea>
         </form>
       </section>
-      <section>
-        <table id="leaderboard">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Points</th>
-              <th>Settings</th>
-            </tr>
-          </thead>
-        </table>
+      <section class="main-box">
+        <h2>Leaderboard</h2>
+        <div class="scrollable">
+          <table class="leaderboard">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Points</th>
+                <th>Settings</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard">
+  
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
+    <footer>
+      <p>Feedback is welcome in the <a href="https://github.com/nathaliebleser/WriteUP">WriteUP Github repository</a></p>
+    </footer>
     
   </body>
 </html>
