@@ -1021,6 +1021,12 @@ function changeToWords() {
   }
 }
 
+const parent = document.getElementById("head");
+const styleDark = document.getElementById("darkmode");
+if (styleDark) {
+  parent.removeChild(styleDark);
+}
+
 // Load all from local storage
 loadSettings();
 loadStatistics();

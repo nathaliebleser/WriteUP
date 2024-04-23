@@ -16,18 +16,24 @@ body {
   color: var(--alice-blue);
 }
 
+.main-box h2 {
+  background-color: rgb(49, 49, 49);
+}
+
 nav {
   background-color: rgb(49, 49, 49);
 }
 
-header h1 {
-  color: var(--alice-blue);
+.hero::before {
   background-color: hsla(60, 3%, 6%, 0.5);
+}
+
+.hero h1 {
+  color: var(--alice-blue);
 }
 
 .reference {
   background-color: var(--night);
-  opacity: 0.6;
 }
 
 .reference h6 {
@@ -38,7 +44,11 @@ header h1 {
   color: var(--alice-blue);
 }
 
-#leaderboard th,td {
+.leaderboard {
+  background-color: rgb(49, 49, 49);
+}
+
+th, td {
   background-color: var(--night);
 }
 
@@ -54,14 +64,14 @@ textarea {
   scrollbar-color: var(--night) rgb(49, 49, 49);
 }
 
-#about {
+.expandable-section {
   background-color: rgb(49, 49, 49);
 }
 
-#stats {
+footer {
   background-color: rgb(49, 49, 49);
 }
 
-#settings {
-  background-color: rgb(49, 49, 49);
+footer a {
+  color: var(--alice-blue);
 }
