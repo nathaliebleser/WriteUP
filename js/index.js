@@ -684,7 +684,7 @@ function toggleDarkmode(checkId,elementId) {
     const parent = document.getElementById("head");
     let style = document.createElement("link");
     style.setAttribute("id","darkmode");
-    style.setAttribute("href","/css/darkmode.css");
+    style.setAttribute("href","./css/darkmode.css");
     style.setAttribute("rel","stylesheet");
     style.setAttribute("type","text/css");
     parent.appendChild(style);
