@@ -9,6 +9,7 @@ let timePaceSustained = 0;
 let lastTextLength = 0;
 let functionId;
 let wordCountDown = false;
+let sessionSuccessfullyStarted = false;
 
 let sessionGoal = "";
 let remainingWordsInSession = 0;
@@ -887,6 +888,10 @@ function resetSessionGoalSetter() {
   freeBtn.addEventListener("click", startFreeSession);
   freeBtn.disabled = false;
 
+  let editor = document.getElementById("editor-field");
+  editor.readOnly = true;
+  sessionSuccessfullyStarted = false;
+
   wordCountDown = false;
 
   multiplier = 1;
@@ -956,8 +961,10 @@ function startSession() {
   // Set visible fields
   updateGoalProgression(goal);
   // Set focus on editor field
-  document.getElementById("editor-field").focus();
-  // 3 second countdown?
+  let editor = document.getElementById("editor-field");
+  editor.focus();
+  editor.readOnly = false;
+  sessionSuccessfullyStarted = true;
   // Disable button, create stop button
   let btn = document.getElementById("session-goal-btn");
   btn.value = "Reset goal";
@@ -980,6 +987,20 @@ function startFreeSession() {
   let btn = document.getElementById("session-goal-btn");
   btn.disabled = true;
   toggleSessionStartElements();
+
+  // Set focus on editor field
+  let editor = document.getElementById("editor-field");
+  editor.focus();
+  editor.readOnly = false;
+  sessionSuccessfullyStarted = true;
+}
+
+function preventStart() {
+  if (!sessionSuccessfullyStarted) {
+    window.alert("Please start a session before beginning to type. You can copy your text from the textfield on the bottom of this page.");
+  } else {
+    document.getElementById("editor-field").removeEventListener("click",preventStart);
+  }
 }
 
 /**
@@ -1012,7 +1033,8 @@ if (statistics.untilNextLevel.value === 0) {
   statistics.untilNextLevel.value = levelCutoffs(1);
 }
 
-let btn = document.getElementById("session-goal-btn");
-btn.addEventListener("click", startSession);
-let freeBtn = document.getElementById("free-session-goal-btn");
-freeBtn.addEventListener("click", startFreeSession);
+// Add events to session start buttons
+document.getElementById("session-goal-btn").addEventListener("click", startSession);
+document.getElementById("free-session-goal-btn").addEventListener("click", startFreeSession);
+// Add prevent start without session event to editor
+document.getElementById("editor-field").addEventListener("click",preventStart);
