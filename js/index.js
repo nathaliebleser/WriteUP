@@ -902,6 +902,8 @@ function resetSessionGoalSetter() {
 
   wordCountDown = false;
 
+  statistics.sessionWords.value = 0;
+
   multiplier = 1;
 
   document.getElementById("goal-indicator").innerHTML = "Left:";
@@ -968,6 +970,12 @@ function startSession() {
   }
   // Set visible fields
   updateGoalProgression(goal);
+
+  // Update Session word element
+  document.getElementById("word-count").innerHTML = "0";
+  // Update multiplier element
+  document.getElementById("multiplier").innerHTML = "x1";
+
   // Set focus on editor field
   let editor = document.getElementById("editor-field");
   editor.focus();
@@ -995,6 +1003,11 @@ function startFreeSession() {
   let btn = document.getElementById("session-goal-btn");
   btn.disabled = true;
   toggleSessionStartElements();
+
+  // Update Session word element
+  document.getElementById("word-count").innerHTML = "0";
+  // Update multiplier element
+  document.getElementById("multiplier").innerHTML = "x1";
 
   // Set focus on editor field
   let editor = document.getElementById("editor-field");
