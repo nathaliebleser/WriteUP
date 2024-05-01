@@ -474,7 +474,7 @@ function add_points(words) {
   let wordPoints = countLongWordPoints(wordsArray);
   // Handle updating of sessions that count down words
   if (wordCountDown) {
-    handleWordCountDown(wordsArray.length, punctuationPoints + wordPoints);
+    handleWordCountDown(wordsArray.length - 1, punctuationPoints + wordPoints);
   }
   //update points
   //let points = Number(document.getElementById("points").innerHTML);
