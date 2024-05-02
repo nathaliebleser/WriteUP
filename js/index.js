@@ -2,7 +2,6 @@
 let latestSeparatorPosition = 0;
 let deletedTextPosition = 0;
 let points = 0;
-let lastUpdate = 0;
 let multiplier = 1; 
 let lastTextLength = 0;
 let functionId;
@@ -82,7 +81,12 @@ const settings = {
     id : "long-word-length",
     value : 8,
     conversion(value) { return storageNrConstraintCheck(value,5,30) }
-  }
+  },
+  MULTIPLIER_DIFFICULTY : {
+    id : "multiplier-difficulty",
+    value : 100,
+    conversion(value) { return storageNrConstraintCheck(value,1,)}
+  } 
 }
 
 const preferences = {
@@ -125,7 +129,6 @@ const preferences = {
 }
 
 let MAX_ELAPSED_TIME = 30*1000;
-let MULTIPLIER_DIFFICULTY = 100;
 
 // This means level 30 is reached after about 99999 words, while level 100 is reached after 999999 words
 const levelCutoffs = (level) => Math.floor(95.238*level*level + 476.19*level);
@@ -226,6 +229,7 @@ function loadSettings() {
   }
   toggleCutoff();
   toggleLongWordLength();
+  toggleMultiplier();
 }
 
 /**
@@ -250,12 +254,6 @@ function loadLeaderboard() {
     cell0.innerHTML = entry.date;
     cell1.innerHTML = entry.points;
     cell2.innerHTML = entry.settings;
-    /*.innerHTML += `
-    <tr>
-      <td>${entry.date}</td>
-      <td>${entry.points}</td>
-      <td>${entry.settings}</td>
-    </tr>`;*/
   }
 }
 
@@ -389,9 +387,6 @@ function countPunctuationPoints(words) {
 
   let foundPunctuation = [];
   // find type and position of all punctuation characters
-  // let punctuationRegex = /[.,:;!–?—]/g
-  // let regexFoundPunctuation = words.match(punctuationRegex);
-  // console.log(regexFoundPunctuation);
   for (let i = 0; i < words.length; i++) {
     if (punctuation.indexOf(words[i]) > -1) {
       foundPunctuation.push([words[i], i]);
@@ -432,7 +427,7 @@ function handleWordCountDown(nrNewWords, newPoints) {
  * Calculates how many points are received for the written words.
  * Also helps check stop condition for wordcount-based sessions.
  * Requires punctuation points to correctly update the leaderboard in case the stop condition is met.
- * @param {[string]} words Words from text-field
+ * @param {[string]} wordsArray Words from text-field
  * @returns {number} Points received for words (punctuation points not included)
  */
 function countLongWordPoints(wordsArray) {
@@ -465,7 +460,7 @@ function countLongWordPoints(wordsArray) {
 
 /** Calculates how many points to add based on the words received and the active multiplier. 
  * Updates point field.
- * @param {[string]} words Words from text-field
+ * @param {string} words Words from text-field
 */
 function add_points(words) {
   let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(words) : 0;
@@ -493,18 +488,19 @@ function showMultiplierUpdate() {
 }
 
 /**
- * Calculates new multiplier resulting from the time that elapsed since the last input.
+ * Calculates new multiplier
  */
 function multiplierUpdate() {
   // Increase multiplier for every 100 words
-  if (~~((statistics.sessionWords.value + 1) / MULTIPLIER_DIFFICULTY) > multiplier - 1) {
+  if (~~(statistics.sessionWords.value / settings.MULTIPLIER_DIFFICULTY.value) > multiplier - 1) {
     multiplier += 1;
     showMultiplierUpdate();
   }
 }
 
 /** Main functionality. 
- * Pulls text from the textarea, calculates points, saves progress, handles text delete option*/
+ * Pulls text from the textarea, calculates points, saves progress, handles text delete option
+ */
 function calculate() {
   const text = document.getElementById("editor-field").value;
   const deletedText = document.getElementById("save").value.slice(0,deletedTextPosition);
@@ -513,18 +509,12 @@ function calculate() {
   if (text.length + deletedTextPosition <= latestSeparatorPosition) {
     // The text did not get longer
     latestSeparatorPosition = text.length + deletedTextPosition;
-    console.log("Shorty");
   } else {
     //Text increased in length
 
     //Weakly account for user potentially writing elsewhere than at the text end
     const selectionPosition = document.getElementById("editor-field").selectionStart;
     const lastChar = text.slice(selectionPosition -1, selectionPosition);
-
-    // update multiplier
-    if (settings.enablePointMultiplier.value) {
-      multiplierUpdate();
-    }
 
     // add points for new characters (if they were not pasted in)
     if (lastChar != " " && sessionSuccessfullyStarted) {
@@ -539,9 +529,13 @@ function calculate() {
       lastTextLength = text.length + deletedTextPosition;
       //console.log(`deletedTextLength: ${deletedTextPosition} textLength: ${textLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
       const newText = text.slice(selectionPosition - textLength, selectionPosition + 1);
-      console.log(newText);
       add_points(newText);
       saveStatistics();
+    }
+
+    // update multiplier
+    if (settings.enablePointMultiplier.value) {
+      multiplierUpdate();
     }
 
     // Optional delete long text feature
@@ -590,11 +584,7 @@ function setLongWordCutoff() {
  * Enables punctuation reward
  */
 function setRewardPunctuation() {
-  if (document.getElementById(settings.rewardPunctuation.id).checked) {
-    settings.rewardPunctuation.value = true;
-  } else {
-    settings.rewardPunctuation.value = false;
-  }
+  settings.rewardPunctuation.value = document.getElementById(settings.rewardPunctuation.id).checked;
 }
 
 /**
@@ -611,6 +601,27 @@ function setEnableTextDelete() {
     settings.enableTextDelete.value = false;
     el.removeEventListener("click",resetSelector);
     return true;
+  }
+}
+
+function setEnableMultiplier() {
+  const multiplierCheck = document.getElementById("point-multiplier").checked;
+  settings.enablePointMultiplier.value = multiplierCheck;
+  if (multiplierCheck) {
+    return setMultiplierDifficulty();
+  } else {
+    return true;
+  }
+}
+
+function setMultiplierDifficulty() {
+  const multiplierDiff = document.getElementById("multiplier-difficulty");
+  const newMultiplierDifficulty = nrConstraintCheck(multiplierDiff,1);
+  if (newMultiplierDifficulty) {
+    settings.MULTIPLIER_DIFFICULTY.value = newMultiplierDifficulty;
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -633,7 +644,7 @@ function setMaxCharacters() {
  * Accepts game settings
  */
 function acceptGameSettings() {
-  if (!setEnableTextDelete() || !setRewardLongWords()) {
+  if (!setEnableTextDelete() || !setRewardLongWords() || !setEnableMultiplier()) {
     return;
   }
   setRewardPunctuation()
@@ -812,6 +823,19 @@ function toggleLongWordLength() {
     longWordValueEl.disabled = false;
   } else {
     longWordValueEl.disabled = true;
+  }
+}
+
+/**
+ * Toggles disabling the input field for multiplier difficulty
+ */
+function toggleMultiplier() {
+  const multiplierCheck = document.getElementById("point-multiplier");
+  const multiplierDiff = document.getElementById("multiplier-difficulty");
+  if (multiplierCheck.checked) {
+    multiplierDiff.disabled = false;
+  } else {
+    multiplierDiff.disabled = true;
   }
 }
 

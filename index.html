@@ -44,16 +44,20 @@
             <input type="checkbox" id="punctuation" value="reward punctuation" checked/>
             <label for="punctuation">Reward punctuation</label><br>
 
-            <input type="checkbox" id="point-multiplier" value="enable point multiplier" checked/>
+            <input type="checkbox" id="point-multiplier" value="enable point multiplier" onclick="toggleMultiplier()" checked/>
             <label for="point-multiplier">Enable point multiplier</label><br>
           </div>
 
           <div class="number-settings" role="presentation">
-            <label for="cutoff-at">Delete text if exceeds x characters</label>
+            <label for="cutoff-at">Delete text if exceeds # characters</label>
             <input type="number" id="cutoff-at" min="30" value="50" disabled/>
 
             <label for="long-word-length">Long word minimum length</label>
             <input type="number" id="long-word-length" name="long word minimum length" min="5" max="30" value="8"/>
+          
+            <label for="multiplier-difficulty">Increase multiplier after # words</label>
+            <input type="number" id="multiplier-difficulty" name="multiplier-difficulty" min="1" value="100"/>
+          
           </div>
           <!--Buttons-->
           <input type="button" value="Apply and save settings" onclick="acceptGameSettings()"/>
