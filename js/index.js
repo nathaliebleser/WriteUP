@@ -4,8 +4,6 @@ let deletedTextPosition = 0;
 let points = 0;
 let lastUpdate = 0;
 let multiplier = 1; 
-let lastTime = Date.now();
-let timePaceSustained = 0;
 let lastTextLength = 0;
 let functionId;
 let wordCountDown = false;
@@ -415,6 +413,7 @@ function countPunctuationPoints(words) {
 
 /**
  * Checks stop condition for wordcount-based sessions
+ * @param {number} nrNewWords Number of new words to be subtracted from the goal
  * @param {number} newPoints Points to be added before leaderboard update
  */
 function handleWordCountDown(nrNewWords, newPoints) {
@@ -433,7 +432,7 @@ function handleWordCountDown(nrNewWords, newPoints) {
  * Calculates how many points are received for the written words.
  * Also helps check stop condition for wordcount-based sessions.
  * Requires punctuation points to correctly update the leaderboard in case the stop condition is met.
- * @param {string[]} words Words from text-field
+ * @param {[string]} words Words from text-field
  * @returns {number} Points received for words (punctuation points not included)
  */
 function countLongWordPoints(wordsArray) {
@@ -466,20 +465,22 @@ function countLongWordPoints(wordsArray) {
 
 /** Calculates how many points to add based on the words received and the active multiplier. 
  * Updates point field.
- * @param {string[]} words Words from text-field
+ * @param {[string]} words Words from text-field
 */
 function add_points(words) {
   let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(words) : 0;
   const wordsArray = words.split(" ");
   let wordPoints = countLongWordPoints(wordsArray);
+  const noEmptyWordsArray = wordsArray.filter((word) => word.length > 0);
   // Handle updating of sessions that count down words
   if (wordCountDown) {
-    handleWordCountDown(wordsArray.length - 1, punctuationPoints + wordPoints);
+    handleWordCountDown(noEmptyWordsArray.length, punctuationPoints + wordPoints);
   }
   //update points
-  //let points = Number(document.getElementById("points").innerHTML);
-  points += multiplier * (wordPoints + punctuationPoints);
-  document.getElementById("points").innerHTML = points;
+  if (sessionSuccessfullyStarted) {
+    points += multiplier * (wordPoints + punctuationPoints);
+    document.getElementById("points").innerHTML = points;
+  }
 }
 
 function showMultiplierUpdate() {
@@ -493,9 +494,8 @@ function showMultiplierUpdate() {
 
 /**
  * Calculates new multiplier resulting from the time that elapsed since the last input.
- * @param {number} elapsedTime In milliseconds
  */
-function multiplierUpdate(elapsedTime) {
+function multiplierUpdate() {
   // Increase multiplier for every 100 words
   if (~~((statistics.sessionWords.value + 1) / MULTIPLIER_DIFFICULTY) > multiplier - 1) {
     multiplier += 1;
@@ -506,7 +506,6 @@ function multiplierUpdate(elapsedTime) {
 /** Main functionality. 
  * Pulls text from the textarea, calculates points, saves progress, handles text delete option*/
 function calculate() {
-  const now = Date.now();
   const text = document.getElementById("editor-field").value;
   const deletedText = document.getElementById("save").value.slice(0,deletedTextPosition);
   document.getElementById("save").value = deletedText + text;
@@ -514,21 +513,21 @@ function calculate() {
   if (text.length + deletedTextPosition <= latestSeparatorPosition) {
     // The text did not get longer
     latestSeparatorPosition = text.length + deletedTextPosition;
+    console.log("Shorty");
   } else {
     //Text increased in length
 
     //Weakly account for user potentially writing elsewhere than at the text end
     const selectionPosition = document.getElementById("editor-field").selectionStart;
     const lastChar = text.slice(selectionPosition -1, selectionPosition);
-    const elapsedTime = now - lastTime;
 
     // update multiplier
     if (settings.enablePointMultiplier.value) {
-      multiplierUpdate(elapsedTime);
+      multiplierUpdate();
     }
 
     // add points for new characters (if they were not pasted in)
-    if (lastChar != " ") {
+    if (lastChar != " " && sessionSuccessfullyStarted) {
       // reward anything but spaces
       points += multiplier * 1;
       document.getElementById("points").innerHTML = points;
@@ -540,7 +539,7 @@ function calculate() {
       lastTextLength = text.length + deletedTextPosition;
       //console.log(`deletedTextLength: ${deletedTextPosition} textLength: ${textLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
       const newText = text.slice(selectionPosition - textLength, selectionPosition + 1);
-
+      console.log(newText);
       add_points(newText);
       saveStatistics();
     }
@@ -551,7 +550,6 @@ function calculate() {
       deletedTextPosition += text.length - settings.MAX_CHARACTERS.value;
     }
   }
-  lastTime = now;
 
   // Save progress in case of browser malfunction
   saveText();
@@ -876,6 +874,12 @@ function toggleSessionStartElements() {
   sessionGoalSettings.style.display = sessionGoalSettings.style.display === "none" ? "block" : "none";
 }
 
+function afterEditorExit() {
+  let editor = document.getElementById("editor-field");
+  editor.addEventListener("click", preventStart);
+  editor.readOnly = true;
+}
+
 /**
  * Resets html elements and variables connected to session goal setting
  */
@@ -897,14 +901,10 @@ function resetSessionGoalSetter() {
   freeBtn.disabled = false;
 
   let editor = document.getElementById("editor-field");
-  editor.readOnly = true;
+  editor.addEventListener("blur", afterEditorExit);
   sessionSuccessfullyStarted = false;
 
   wordCountDown = false;
-
-  statistics.sessionWords.value = 0;
-
-  multiplier = 1;
 
   document.getElementById("goal-indicator").innerHTML = "Left:";
 }
@@ -944,9 +944,35 @@ function stopFreeSession() {
 }
 
 /**
+ * Contains the code that is used by both methods of starting a session
+ */
+function startAnySession() {
+  // Update Session word element
+  statistics.sessionWords.value = 0;
+  document.getElementById("word-count").innerHTML = "0";
+  // Update multiplier element
+  multiplier = 1;
+  document.getElementById("multiplier").innerHTML = "x1";
+
+  // Set focus on editor field
+  let editor = document.getElementById("editor-field");
+  editor.removeEventListener("blur", afterEditorExit);
+  editor.value = "";
+  editor.focus();
+  editor.readOnly = false;
+
+  //Set selection correctly
+  deletedTextPosition = document.getElementById("editor-field").selectionStart;
+  latestSeparatorPosition = deletedTextPosition;
+  lastTextLength = 0;
+
+  sessionSuccessfullyStarted = true;
+}
+
+/**
  * Starts a time/wordcount-based session based on the input parameters set
  */
-function startSession() {
+function startSession() {  
   // Get field value
   const sessionGoalInput = document.getElementById("session-goal");
   let goal = nrConstraintCheck(sessionGoalInput,1);
@@ -971,16 +997,8 @@ function startSession() {
   // Set visible fields
   updateGoalProgression(goal);
 
-  // Update Session word element
-  document.getElementById("word-count").innerHTML = "0";
-  // Update multiplier element
-  document.getElementById("multiplier").innerHTML = "x1";
+  startAnySession();
 
-  // Set focus on editor field
-  let editor = document.getElementById("editor-field");
-  editor.focus();
-  editor.readOnly = false;
-  sessionSuccessfullyStarted = true;
   // Disable button, create stop button
   let btn = document.getElementById("session-goal-btn");
   btn.value = "Reset goal";
@@ -995,6 +1013,8 @@ function startSession() {
  * Starts a session without time/wordcount goal
  */
 function startFreeSession() {
+  startAnySession();
+
   sessionGoal = "No target";
   let freeBtn = document.getElementById("free-session-goal-btn");
   freeBtn.value = "Stop session";
@@ -1003,21 +1023,11 @@ function startFreeSession() {
   let btn = document.getElementById("session-goal-btn");
   btn.disabled = true;
   toggleSessionStartElements();
-
-  // Update Session word element
-  document.getElementById("word-count").innerHTML = "0";
-  // Update multiplier element
-  document.getElementById("multiplier").innerHTML = "x1";
-
-  // Set focus on editor field
-  let editor = document.getElementById("editor-field");
-  editor.focus();
-  editor.readOnly = false;
-  sessionSuccessfullyStarted = true;
 }
 
 function preventStart() {
   if (!sessionSuccessfullyStarted) {
+    document.getElementById("editor-field").readOnly = true;
     window.alert("Please start a session before beginning to type. You can copy your text from the textfield on the bottom of this page.");
   } else {
     document.getElementById("editor-field").removeEventListener("click",preventStart);
