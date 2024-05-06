@@ -523,7 +523,7 @@ function calculate() {
   const deletedText = document.getElementById("save").value.slice(0,deletedTextPosition);
   document.getElementById("save").value = deletedText + text;
 
-  console.log(`Text length: ${text.length} + DeletedTextPosition ${deletedTextPosition} <= ${latestSeparatorPosition - 1}`)
+  // console.log(`Text length: ${text.length} + DeletedTextPosition ${deletedTextPosition} <= ${latestSeparatorPosition - 1}`)
   if (text.length + deletedTextPosition > latestSeparatorPosition - 1) {
     //Text increased in length
 
@@ -879,12 +879,16 @@ function addLeaderboardEntry(points) {
     "settings": sessionGoal,
   }
   leaderboard.push(newEntry);
-  document.getElementById("leaderboard").innerHTML += `
-  <tr>
-    <td>${newEntry.date}</td>
-    <td>${newEntry.points}</td>
-    <td>${newEntry.settings}</td>
-  </tr>`;
+  
+  let table = document.getElementById("leaderboard");
+  let row = table.insertRow(0);
+  let cell0 = row.insertCell(0);
+  let cell1 = row.insertCell(1);
+  let cell2 = row.insertCell(2);
+  cell0.innerHTML = newEntry.date;
+  cell1.innerHTML = newEntry.points;
+  cell2.innerHTML = newEntry.settings;
+
   sessionGoal = "";
   saveLeaderboard();
 }
