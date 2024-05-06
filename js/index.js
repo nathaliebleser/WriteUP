@@ -223,10 +223,10 @@ function loadSettings() {
     }
   }
   // Treat special cases arising from settings
-  let el = document.getElementById("editor-field");
-  if (settings.enableTextDelete.value) {
-    el.addEventListener("click",resetSelector);
-  }
+  // let el = document.getElementById("editor-field");
+  // if (settings.enableTextDelete.value) {
+  //   el.addEventListener("click",resetSelector);
+  // }
   toggleCutoff();
   toggleLongWordLength();
   toggleMultiplier();
@@ -365,10 +365,10 @@ function setUntilNextLevel() {
 
 /**
  * Calculates points awarded for punctuation.
- * @param {string} words Words from text-field
+ * @param {string} text Text from text-field
  * @returns {number} Points awarded for punctuation
  */
-function countPunctuationPoints(words) {
+function countPunctuationPoints(text) {
   const emDash = "—";
   const enDash = "–";
   const punctuation = [".",",",":",";","!","?", emDash, enDash]; 
@@ -387,9 +387,9 @@ function countPunctuationPoints(words) {
 
   let foundPunctuation = [];
   // find type and position of all punctuation characters
-  for (let i = 0; i < words.length; i++) {
-    if (punctuation.indexOf(words[i]) > -1) {
-      foundPunctuation.push([words[i], i]);
+  for (let i = 0; i < text.length; i++) {
+    if (punctuation.indexOf(text[i]) > -1) {
+      foundPunctuation.push([text[i], i]);
     }
   }
   // Count points
@@ -409,13 +409,10 @@ function countPunctuationPoints(words) {
 /**
  * Checks stop condition for wordcount-based sessions
  * @param {number} nrNewWords Number of new words to be subtracted from the goal
- * @param {number} newPoints Points to be added before leaderboard update
  */
-function handleWordCountDown(nrNewWords, newPoints) {
+function handleWordCountDown(nrNewWords) {
   remainingWordsInSession -= nrNewWords;
   if (remainingWordsInSession <= 0) {
-    //let points = Number(document.getElementById("points").innerHTML) + newPoints;
-    points += newPoints;
     addLeaderboardEntry(points);
     resetSessionGoalSetter();
   } else {
@@ -424,53 +421,54 @@ function handleWordCountDown(nrNewWords, newPoints) {
 }
 
 /**
+ * Extracts words
+ * @param {string} text 
+ * @returns {[string]} Words
+ */
+function extractWords(text) {
+  const words = text.split(" ");
+  let returnArray = [];
+  for (const word of words) {
+    const regex = /\p{L}+/gu;
+    const lettersOnly = word.matchAll(regex);
+    for (const wordPart of lettersOnly) {
+      returnArray.push(wordPart[0]);
+    }
+  }
+  return returnArray;
+}
+
+/**
  * Calculates how many points are received for the written words.
  * Also helps check stop condition for wordcount-based sessions.
  * Requires punctuation points to correctly update the leaderboard in case the stop condition is met.
- * @param {[string]} wordsArray Words from text-field
+ * @param {string} text Text from text-field
  * @returns {number} Points received for words (punctuation points not included)
  */
-function countLongWordPoints(wordsArray) {
+function countLongWordPoints(text) {
   let newPoints = 0;
+  const wordsArray = extractWords(text);
   //Handle each word separately
   for (const word of wordsArray) {
-    // Count only alphanumerical letters
-    const regex = /\p{L}+/gu;
-    const lettersOnly = word.matchAll(regex);
-    
-    for (const wordPart of lettersOnly) {
-      const wordLength = wordPart[0].length;
-      statistics.ultimateWordCount.value += 1;
-      statistics.sessionWords.value += 1;
-      statistics.untilNextLevel.value -= 1;
-      setWordCounts();
-      setUntilNextLevel();
-
-      if (settings.rewardLongWords.value) {
-        // give 1 additional point for every character in words longer than LONG_WORD_CUTOFF
-        if (wordLength >= settings.LONG_WORD_CUTOFF.value) {
-          // Words longer than 30 characters don't count
-          newPoints += Math.min(wordLength,30) - settings.LONG_WORD_CUTOFF.value + 1;
-        } 
-      }
-    }
+    if (settings.rewardLongWords.value) {
+      // give 1 additional point for every character in words longer than LONG_WORD_CUTOFF
+      if (word.length >= settings.LONG_WORD_CUTOFF.value) {
+        // Words longer than 30 characters don't count
+        newPoints += Math.min(word.length,30) - settings.LONG_WORD_CUTOFF.value + 1;
+      } 
+    } 
   }
   return newPoints;
 }
 
 /** Calculates how many points to add based on the words received and the active multiplier. 
  * Updates point field.
- * @param {string} words Words from text-field
+ * @param {string} text Words from text-field
 */
-function add_points(words) {
-  let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(words) : 0;
-  const wordsArray = words.split(" ");
-  let wordPoints = countLongWordPoints(wordsArray);
-  const noEmptyWordsArray = wordsArray.filter((word) => word.length > 0);
-  // Handle updating of sessions that count down words
-  if (wordCountDown) {
-    handleWordCountDown(noEmptyWordsArray.length, punctuationPoints + wordPoints);
-  }
+function addPoints(text) {
+  let punctuationPoints = settings.rewardPunctuation.value ? countPunctuationPoints(text) : 0;
+  let wordPoints = countLongWordPoints(text);
+
   //update points
   if (sessionSuccessfullyStarted) {
     points += multiplier * (wordPoints + punctuationPoints);
@@ -478,6 +476,9 @@ function add_points(words) {
   }
 }
 
+/**
+ * Plays animation when multiplier updates
+ */
 function showMultiplierUpdate() {
   let multiplierEl = document.getElementById("multiplier");
   multiplierEl.innerHTML="x" + multiplier;
@@ -498,6 +499,22 @@ function multiplierUpdate() {
   }
 }
 
+/**
+ * Updates all word counts
+ * @param {string} text editor content
+ */
+function updateWordCounts(text) {
+  const words = extractWords(text);
+  statistics.ultimateWordCount.value += words.length;
+  statistics.sessionWords.value += words.length;
+  statistics.untilNextLevel.value -= words.length;
+  setWordCounts();
+  setUntilNextLevel();
+  if (wordCountDown) {
+    handleWordCountDown(words.length);
+  }
+}
+
 /** Main functionality. 
  * Pulls text from the textarea, calculates points, saves progress, handles text delete option
  */
@@ -506,10 +523,8 @@ function calculate() {
   const deletedText = document.getElementById("save").value.slice(0,deletedTextPosition);
   document.getElementById("save").value = deletedText + text;
 
-  if (text.length + deletedTextPosition <= latestSeparatorPosition) {
-    // The text did not get longer
-    latestSeparatorPosition = text.length + deletedTextPosition;
-  } else {
+  console.log(`Text length: ${text.length} + DeletedTextPosition ${deletedTextPosition} <= ${latestSeparatorPosition - 1}`)
+  if (text.length + deletedTextPosition > latestSeparatorPosition - 1) {
     //Text increased in length
 
     //Weakly account for user potentially writing elsewhere than at the text end
@@ -525,11 +540,14 @@ function calculate() {
 
     // if a word is finished or a new paragraph starts, add word and punctuation points
     if (lastChar === " " || lastChar === "\n") {
-      let textLength = text.length + deletedTextPosition - lastTextLength;
+      const newTextLength = text.length + deletedTextPosition - lastTextLength;
       lastTextLength = text.length + deletedTextPosition;
-      //console.log(`deletedTextLength: ${deletedTextPosition} textLength: ${textLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
-      const newText = text.slice(selectionPosition - textLength, selectionPosition + 1);
-      add_points(newText);
+      // console.log(`deletedTextLength: ${deletedTextPosition} new text length: ${newTextLength} separator position: ${selectionPosition}. Last Text length: ${lastTextLength}`);
+      const savedText = document.getElementById("save").value;
+      const newText = savedText.slice(deletedTextPosition + selectionPosition - newTextLength, deletedTextPosition + selectionPosition); 
+      // console.log("\"" + newText + "\"");
+      addPoints(newText);
+      updateWordCounts(newText);
       saveStatistics();
     }
 
@@ -540,10 +558,13 @@ function calculate() {
 
     // Optional delete long text feature
     if (settings.enableTextDelete.value && text.length > settings.MAX_CHARACTERS.value) {
-      document.getElementById("editor-field").value = text.slice(-settings.MAX_CHARACTERS.value);
+      const editor = document.getElementById("editor-field");
+      editor.value = text.slice(-settings.MAX_CHARACTERS.value);
+      editor.setSelectionRange(selectionPosition - 1, selectionPosition - 1);
       deletedTextPosition += text.length - settings.MAX_CHARACTERS.value;
     }
   }
+  latestSeparatorPosition = text.length + deletedTextPosition;
 
   // Save progress in case of browser malfunction
   saveText();
@@ -595,11 +616,11 @@ function setEnableTextDelete() {
   let el = document.getElementById("editor-field");
   if (document.getElementById(settings.enableTextDelete.id).checked) {
     settings.enableTextDelete.value = true;
-    el.addEventListener("click",resetSelector);
+    //el.addEventListener("click",resetSelector);
     return setMaxCharacters();
   } else {
     settings.enableTextDelete.value = false;
-    el.removeEventListener("click",resetSelector);
+    //el.removeEventListener("click",resetSelector);
     return true;
   }
 }
@@ -907,7 +928,7 @@ function afterEditorExit() {
 /**
  * Resets html elements and variables connected to session goal setting
  */
-function resetSessionGoalSetter() {
+function resetSessionGoalSetter(manualStop = false) {
   toggleSessionStartElements();
   document.getElementById("points").innerHTML = 0;
   points = 0;
@@ -924,13 +945,17 @@ function resetSessionGoalSetter() {
   freeBtn.addEventListener("click", startFreeSession);
   freeBtn.disabled = false;
 
-  let editor = document.getElementById("editor-field");
-  editor.addEventListener("blur", afterEditorExit);
-  sessionSuccessfullyStarted = false;
+  document.getElementById("goal-indicator").innerHTML = "Left:";
 
+  sessionSuccessfullyStarted = false;
   wordCountDown = false;
 
-  document.getElementById("goal-indicator").innerHTML = "Left:";
+  if (!manualStop) {
+    let editor = document.getElementById("editor-field");
+    editor.addEventListener("blur", afterEditorExit);
+  } else {
+    afterEditorExit();
+  }
 }
 
 /**
@@ -956,7 +981,7 @@ function stopSession() {
   } 
   sessionGoal += "; interrupted";
   addLeaderboardEntry(points);
-  resetSessionGoalSetter();
+  resetSessionGoalSetter(true);
 }
 
 /**
@@ -964,7 +989,7 @@ function stopSession() {
  */
 function stopFreeSession() {
   addLeaderboardEntry(points);
-  resetSessionGoalSetter();
+  resetSessionGoalSetter(true);
 }
 
 /**
