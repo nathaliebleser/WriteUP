@@ -866,13 +866,15 @@ function toggleMultiplier() {
  */
 function addLeaderboardEntry(points) {
   const date = new Date();
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
+  let day = date.getDate();
+  day = String(day).padStart(2,"0");
+  let month = date.getMonth() + 1;
+  month = String(month).padStart(2,"0");
   const year = date.getFullYear();
   let hour = date.getHours();
-  hour = String(hour).padStart(2);
+  hour = String(hour).padStart(2, "0");
   let min = date.getMinutes();
-  min = String(min).padStart(2);
+  min = String(min).padStart(2, "0");
   const newEntry = {
     date: `${day}.${month}.${year} ${hour}:${min}`,
     points,
